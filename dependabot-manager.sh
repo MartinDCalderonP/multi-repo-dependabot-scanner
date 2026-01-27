@@ -17,7 +17,7 @@ source "$SCRIPT_DIR/lib/commit-workflow.sh"
 
 MODE="${1:-check}"
 
-if [ "$(basename "$(pwd)")" = "dependabot-tools" ]; then
+if [ "$(basename "$(pwd)")" = "multi-repo-dependabot-scanner" ]; then
     WORKSPACE_DIR="$(dirname "$(pwd)")"
 else
     WORKSPACE_DIR="$(pwd)"
