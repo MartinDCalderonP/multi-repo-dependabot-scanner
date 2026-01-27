@@ -1,11 +1,11 @@
-# Dependabot Manager
+# Multi-Repo Dependabot Scanner
 
-Modular tool to manage Dependabot alerts across multiple GitHub repositories.
+Modular tool to scan and manage Dependabot alerts across multiple GitHub repositories.
 
 ## 📁 Project Structure
 
 ```
-dependabot-tools/
+multi-repo-dependabot-scanner/
 ├── dependabot-manager.sh       # Main script (~250 lines)
 ├── lib/
 │   ├── colors.sh              # Color definitions (8 lines)
@@ -27,10 +27,10 @@ The script automatically detects its location and analyzes repositories:
 ```bash
 # From the parent directory containing repos
 cd /path/to/repos
-./dependabot-tools/dependabot-manager.sh check
+./multi-repo-dependabot-scanner/dependabot-manager.sh check
 
 # Or from within the script directory (auto-detects parent)
-cd dependabot-tools
+cd multi-repo-dependabot-scanner
 ./dependabot-manager.sh check
 ```
 
@@ -40,7 +40,7 @@ Commands:
 - `fix` - Attempt to fix auto-resolvable alerts
 - `both` - Check and fix in sequence
 
-**Smart Detection:** If run from `dependabot-tools/`, it automatically analyzes sibling directories in the parent folder.
+**Smart Detection:** If run from `multi-repo-dependabot-scanner/`, it automatically analyzes sibling directories in the parent folder.
 
 ## 📦 Modules
 
