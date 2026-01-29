@@ -44,6 +44,11 @@ process_alerts() {
     local alerts_json=$3
     local alerts_count=$4
     
+    local pm=$(detect_package_manager)
+    if [ "$pm" != "unknown" ]; then
+        alerts_json=$(enrich_alerts_with_versions "$alerts_json" "$pm")
+    fi
+    
     read auto_fixable breaking unfixable <<< $(calculate_alert_metrics "$alerts_json" "$alerts_count")
     
     total_fixable=$((total_fixable + auto_fixable))

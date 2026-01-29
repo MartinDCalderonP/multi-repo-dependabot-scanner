@@ -12,14 +12,31 @@ detect_package_manager() {
     fi
 }
 
+get_installed_version() {
+    local pm=$1
+    local package_name=$2
+    
+    local version=""
+    case $pm in
+        "pnpm")
+            version=$(pnpm why "$package_name" 2>&1 | grep -oE "$package_name [0-9]+\.[0-9]+\.[0-9]+" | head -1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+            ;;
+        "yarn")
+            version=$(yarn list --pattern "$package_name" --depth=0 2>/dev/null | grep -oE "$package_name@[0-9]+\.[0-9]+\.[0-9]+" | head -1 | cut -d'@' -f2)
+            ;;
+        "npm")
+            version=$(npm list "$package_name" --depth=Infinity 2>&1 | grep -oE "$package_name@[0-9]+\.[0-9]+\.[0-9]+" | head -1 | cut -d'@' -f2)
+            ;;
+    esac
+    
+    echo "$version"
+}
+
 fix_vulnerabilities() {
     local pm=$1
     local alerts_json=$2
     
-    local packages=$(echo "$alerts_json" | jq -r 'map(select(.security_vulnerability.first_patched_version.identifier != null)) | map(. + {
-        current_major: (.security_vulnerability.vulnerable_version_range | split(",")[-1] | capture("[<>=]*\\s*(?<major>[0-9]+)") | .major | tonumber),
-        patched_major: (.security_vulnerability.first_patched_version.identifier | capture("^(?<major>[0-9]+)") | .major | tonumber)
-    }) | map(select(.patched_major <= .current_major)) | .[].dependency.package.name' | tr '\n' ' ')
+    local packages=$(echo "$alerts_json" | jq -r 'map(select(.is_auto_fixable == true)) | .[].dependency.package.name' | tr '\n' ' ')
     
     if [ -z "$packages" ]; then
         return 0
