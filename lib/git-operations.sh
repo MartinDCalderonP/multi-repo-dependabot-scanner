@@ -9,9 +9,12 @@ create_fix_branch() {
 commit_fixes() {
     local alerts_count=$1
     
-    git add -u package.json pnpm-lock.yaml pnpm-workspace.yaml yarn.lock package-lock.json 2>/dev/null
-    
-    git add package.json pnpm-lock.yaml pnpm-workspace.yaml yarn.lock package-lock.json 2>/dev/null
+    # Add all changes to package files (modified or new)
+    git add package.json 2>/dev/null
+    git add pnpm-lock.yaml 2>/dev/null
+    git add pnpm-workspace.yaml 2>/dev/null
+    git add yarn.lock 2>/dev/null
+    git add package-lock.json 2>/dev/null
     
     if git diff --cached --quiet; then
         print_warning "No hay cambios staged para commitear"
