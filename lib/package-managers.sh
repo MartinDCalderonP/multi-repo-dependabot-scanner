@@ -19,16 +19,24 @@ fix_vulnerabilities() {
         "pnpm")
             print_info "   Ejecutando: pnpm audit --fix"
             pnpm audit --fix 2>/dev/null
+            print_info "   Ejecutando: pnpm update"
+            pnpm update 2>/dev/null
             print_info "   Ejecutando: pnpm install"
             pnpm install 2>/dev/null
             ;;
         "yarn")
             print_info "   Ejecutando: yarn audit fix"
             yarn audit fix 2>/dev/null
+            print_info "   Ejecutando: yarn install"
+            yarn install 2>/dev/null
             ;;
         "npm")
-            print_info "   Ejecutando: npm audit fix"
-            npm audit fix 2>/dev/null
+            print_info "   Ejecutando: npm audit fix --force"
+            npm audit fix --force 2>/dev/null
+            print_info "   Ejecutando: npm update"
+            npm update 2>/dev/null
+            print_info "   Ejecutando: npm install"
+            npm install 2>/dev/null
             ;;
         *)
             return 1
