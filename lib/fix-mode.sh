@@ -24,6 +24,9 @@ run_fix_mode() {
         return
     fi
     
+    print_info "📥 Sincronizando con remoto..."
+    git pull --rebase 2>/dev/null || print_warning "No se pudo hacer pull (puede no tener remoto configurado)"
+    
     echo ""
     print_info "🔧 Intentando reparar vulnerabilidades auto-resolvibles..."
     echo ""
@@ -39,15 +42,14 @@ apply_fixes() {
     local pm=$1
     local alerts_json=$2
     
-    if fix_vulnerabilities "$pm"; then
-        if has_uncommitted_changes; then
-            print_success "Se aplicaron correcciones automáticas"
-        else
-            print_warning "No se pudieron aplicar correcciones automáticas"
-        fi
-    fi
-    
+    fix_vulnerabilities "$pm"
     apply_yarn_resolutions "$pm" "$alerts_json"
+    
+    if has_uncommitted_changes; then
+        print_success "Se aplicaron correcciones automáticas"
+    else
+        print_warning "No se pudieron aplicar correcciones automáticas (pueden ser dependencias indirectas sin override)"
+    fi
 }
 
 apply_yarn_resolutions() {
