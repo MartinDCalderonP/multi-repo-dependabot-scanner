@@ -25,10 +25,7 @@ fix_vulnerabilities() {
             pnpm install 2>/dev/null
             ;;
         "yarn")
-            print_info "   Ejecutando: yarn audit fix"
-            yarn audit fix 2>/dev/null
-            print_info "   Ejecutando: yarn install"
-            yarn install 2>/dev/null
+            print_info "   Yarn no soporta audit fix, usando resolutions..."
             ;;
         "npm")
             print_info "   Ejecutando: npm audit fix --force"
