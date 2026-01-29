@@ -14,13 +14,23 @@ detect_package_manager() {
 
 fix_vulnerabilities() {
     local pm=$1
+    local alerts_json=$2
+    
+    local packages=$(echo "$alerts_json" | jq -r 'map(select(.security_vulnerability.first_patched_version.identifier != null)) | map(. + {
+        current_major: (.security_vulnerability.vulnerable_version_range | split(",")[-1] | capture("[<>=]*\\s*(?<major>[0-9]+)") | .major | tonumber),
+        patched_major: (.security_vulnerability.first_patched_version.identifier | capture("^(?<major>[0-9]+)") | .major | tonumber)
+    }) | map(select(.patched_major <= .current_major)) | .[].dependency.package.name' | tr '\n' ' ')
+    
+    if [ -z "$packages" ]; then
+        return 0
+    fi
     
     case $pm in
         "pnpm")
             print_info "   Ejecutando: pnpm audit --fix"
             pnpm audit --fix 2>/dev/null
-            print_info "   Ejecutando: pnpm update"
-            pnpm update 2>/dev/null
+            print_info "   Actualizando paquetes vulnerables: $packages"
+            pnpm update $packages 2>/dev/null
             print_info "   Ejecutando: pnpm install"
             pnpm install 2>/dev/null
             ;;
@@ -30,8 +40,8 @@ fix_vulnerabilities() {
         "npm")
             print_info "   Ejecutando: npm audit fix --force"
             npm audit fix --force 2>/dev/null
-            print_info "   Ejecutando: npm update"
-            npm update 2>/dev/null
+            print_info "   Actualizando paquetes vulnerables: $packages"
+            npm update $packages 2>/dev/null
             print_info "   Ejecutando: npm install"
             npm install 2>/dev/null
             ;;

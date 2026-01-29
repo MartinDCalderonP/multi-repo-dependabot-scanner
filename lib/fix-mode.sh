@@ -42,7 +42,7 @@ apply_fixes() {
     local pm=$1
     local alerts_json=$2
     
-    fix_vulnerabilities "$pm"
+    fix_vulnerabilities "$pm" "$alerts_json"
     apply_yarn_resolutions "$pm" "$alerts_json"
     
     if has_uncommitted_changes; then
