@@ -9,6 +9,8 @@ create_fix_branch() {
 commit_fixes() {
     local alerts_count=$1
     
+    git add -u package.json pnpm-lock.yaml pnpm-workspace.yaml yarn.lock package-lock.json 2>/dev/null
+    
     git add package.json pnpm-lock.yaml pnpm-workspace.yaml yarn.lock package-lock.json 2>/dev/null
     
     if git diff --cached --quiet; then
