@@ -1,5 +1,22 @@
 #!/bin/bash
 
+get_default_branch() {
+    local default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+    
+    if [ -n "$default_branch" ]; then
+        echo "$default_branch"
+        return
+    fi
+    
+    if git show-ref --verify --quiet refs/heads/main; then
+        echo "main"
+    elif git show-ref --verify --quiet refs/heads/master; then
+        echo "master"
+    else
+        git branch --show-current
+    fi
+}
+
 create_fix_branch() {
     local branch_name="fix/dependabot-alerts-$(date +%Y%m%d)"
     git checkout -b "$branch_name" 2>/dev/null || git checkout "$branch_name"
@@ -37,6 +54,7 @@ push_branch() {
 
 create_pull_request() {
     local alerts_count=$1
+    local default_branch=$(get_default_branch)
     
     gh pr create --title "fix: resolve Dependabot security alerts" \
                --body "Automated fixes for Dependabot security alerts.
@@ -48,14 +66,12 @@ create_pull_request() {
 
 ## Security
 Resolves $alerts_count open Dependabot security alerts." \
-               --base main 2>/dev/null || \
-    gh pr create --title "fix: resolve Dependabot security alerts" \
-               --body "Automated fixes for Dependabot security alerts." \
-               --base master 2>/dev/null
+               --base "$default_branch"
 }
 
 checkout_main_branch() {
-    git checkout main 2>/dev/null || git checkout master 2>/dev/null
+    local default_branch=$(get_default_branch)
+    git checkout "$default_branch" 2>/dev/null
 }
 
 discard_changes() {

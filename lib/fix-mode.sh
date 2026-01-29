@@ -24,8 +24,9 @@ run_fix_mode() {
         return
     fi
     
-    print_info "📥 Sincronizando con remoto..."
-    git pull --rebase 2>/dev/null || print_warning "No se pudo hacer pull (puede no tener remoto configurado)"
+    local default_branch=$(get_default_branch)
+    print_info "📥 Sincronizando con remoto ($default_branch)..."
+    git pull --rebase origin "$default_branch" 2>/dev/null || print_warning "No se pudo hacer pull (puede no tener remoto configurado)"
     
     echo ""
     print_info "🔧 Intentando reparar vulnerabilidades auto-resolvibles..."
