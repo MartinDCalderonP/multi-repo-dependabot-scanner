@@ -6,9 +6,11 @@ calculate_alert_metrics() {
     
     local fixable=$(echo "$alerts_json" | jq '[.[] | select(.security_vulnerability.first_patched_version.identifier != null)] | length' 2>/dev/null)
     
-    local breaking=$(echo "$alerts_json" | jq '[.[] | select(.security_vulnerability.first_patched_version.identifier != null) | 
-        (.security_vulnerability.first_patched_version.identifier | capture("^(?<major>[0-9]+)") | .major | tonumber) as $patched_major |
-        select($patched_major >= 2)
+    local breaking=$(echo "$alerts_json" | jq '[.[] | 
+        select(.security_vulnerability.first_patched_version.identifier != null) |
+        (.security_vulnerability.vulnerable_version_range | split(",")[-1] | capture("[<>=]*\\s*(?<current_major>[0-9]+)") | .current_major | tonumber) as $current_major |
+        (.security_vulnerability.first_patched_version.identifier | capture("^(?<patched_major>[0-9]+)") | .patched_major | tonumber) as $patched_major |
+        select($patched_major > $current_major)
     ] | length' 2>/dev/null)
     
     local auto_fixable=$((fixable - breaking))
