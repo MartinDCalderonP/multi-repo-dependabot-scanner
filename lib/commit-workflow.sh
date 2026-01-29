@@ -2,6 +2,7 @@
 
 handle_commit_workflow() {
     local alerts_count=$1
+    local branch_name=$2
     
     repos_fixed=$((repos_fixed + 1))
     
@@ -15,8 +16,9 @@ handle_commit_workflow() {
     echo ""
     
     if prompt_yes_no "¿Crear commit, push y PR?" create_all; then
-        execute_full_workflow "$alerts_count"
+        execute_full_workflow "$alerts_count" "$branch_name"
     else
+        checkout_main_branch
         discard_changes
         print_warning "Cambios descartados"
     fi
@@ -24,7 +26,7 @@ handle_commit_workflow() {
 
 execute_full_workflow() {
     local alerts_count=$1
-    local branch_name=$(create_fix_branch)
+    local branch_name=$2
     
     if ! commit_fixes "$alerts_count"; then
         checkout_main_branch
