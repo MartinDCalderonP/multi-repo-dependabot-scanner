@@ -9,7 +9,13 @@ create_fix_branch() {
 commit_fixes() {
     local alerts_count=$1
     
-    git add package.json pnpm-lock.yaml yarn.lock package-lock.json 2>/dev/null
+    git add package.json pnpm-lock.yaml pnpm-workspace.yaml yarn.lock package-lock.json 2>/dev/null
+    
+    if git diff --cached --quiet; then
+        print_warning "No hay cambios staged para commitear"
+        return 1
+    fi
+    
     git commit -m "fix: resolve Dependabot security alerts
 
 - Applied automatic fixes with audit fix

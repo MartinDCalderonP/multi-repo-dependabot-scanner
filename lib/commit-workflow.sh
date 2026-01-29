@@ -9,61 +9,41 @@ handle_commit_workflow() {
     print_success "✨ Se realizaron actualizaciones"
     echo ""
     
-    prompt_review_changes
-    prompt_create_commit "$alerts_count"
-}
-
-prompt_review_changes() {
-    if prompt_yes_no "¿Revisar cambios?" review; then
-        git status
-        echo ""
-        git diff package.json | head -50
-        echo ""
-    fi
-}
-
-prompt_create_commit() {
-    local alerts_count=$1
+    git status
+    echo ""
+    git diff package.json | head -50
+    echo ""
     
-    if prompt_yes_no "¿Crear commit y rama?" create_commit; then
-        execute_commit_workflow "$alerts_count"
+    if prompt_yes_no "¿Crear commit, push y PR?" create_all; then
+        execute_full_workflow "$alerts_count"
     else
         discard_changes
         print_warning "Cambios descartados"
     fi
 }
 
-execute_commit_workflow() {
+execute_full_workflow() {
     local alerts_count=$1
     local branch_name=$(create_fix_branch)
     
-    commit_fixes "$alerts_count"
+    if ! commit_fixes "$alerts_count"; then
+        checkout_main_branch
+        return 1
+    fi
+    
     print_success "Commit creado en rama $branch_name"
     
-    prompt_push "$branch_name" "$alerts_count"
-}
-
-prompt_push() {
-    local branch_name=$1
-    local alerts_count=$2
-    
-    echo ""
-    if prompt_yes_no "¿Hacer push?" do_push; then
-        push_branch "$branch_name"
+    if push_branch "$branch_name"; then
         print_success "Push realizado"
         
-        prompt_create_pr "$alerts_count"
+        if create_pull_request "$alerts_count"; then
+            print_success "Pull Request creado"
+        else
+            print_warning "No se pudo crear el PR (puede que ya exista)"
+        fi
+    else
+        print_warning "No se pudo hacer push"
     fi
     
     checkout_main_branch
-}
-
-prompt_create_pr() {
-    local alerts_count=$1
-    
-    echo ""
-    if prompt_yes_no "¿Crear Pull Request?" create_pr; then
-        create_pull_request "$alerts_count"
-        print_success "Pull Request creado"
-    fi
 }
