@@ -86,6 +86,11 @@ discard_changes() {
     git clean -fd 2>/dev/null
 }
 
+delete_branch() {
+    local branch_name=$1
+    git branch -D "$branch_name" >/dev/null 2>&1
+}
+
 has_uncommitted_changes() {
     ! git diff-index --quiet HEAD -- 2>/dev/null
 }

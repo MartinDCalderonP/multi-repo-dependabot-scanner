@@ -21,6 +21,7 @@ handle_commit_workflow() {
     else
         checkout_main_branch
         discard_changes
+        delete_branch "$branch_name"
         print_warning "Cambios descartados"
     fi
 }

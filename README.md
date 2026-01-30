@@ -71,8 +71,9 @@ Commands:
    - Syncs with remote main/master branch
    - Creates descriptive branch with package names
    - Applies targeted updates only to vulnerable packages
-   - Commits with descriptive message including package names
-   - Creates pull request with change summary
+   - Shows changes and prompts user for confirmation
+   - If confirmed: commits, pushes, and creates PR with descriptive messages
+   - If rejected: discards changes, deletes temporary branch, and returns to main
 
 ### Monorepo Support
 
