@@ -17,13 +17,7 @@ run_fix_mode() {
         
         if [ -n "$subdirs" ]; then
             print_info "📦 Detectado monorepo con subdirectorios"
-            echo "$subdirs" | while IFS= read -r subdir; do
-                echo ""
-                print_info "📂 Procesando $subdir..."
-                cd "$subdir" || continue
-                run_fix_mode_in_directory "$alerts_json" "$alerts_count" "$auto_fixable"
-                cd - > /dev/null
-            done
+            run_fix_mode_monorepo "$alerts_json" "$alerts_count" "$subdirs"
             return
         else
             print_warning "No se detectó gestor de paquetes"
@@ -31,33 +25,49 @@ run_fix_mode() {
         fi
     fi
     
-    run_fix_mode_in_directory "$alerts_json" "$alerts_count" "$auto_fixable"
+    run_fix_mode_single "$alerts_json" "$alerts_count" "$pm"
 }
 
-run_fix_mode_in_directory() {
+run_fix_mode_monorepo() {
     local alerts_json=$1
     local alerts_count=$2
-    local auto_fixable=$3
+    local subdirs=$3
     
-    local pm=$(detect_package_manager)
+    local package_names=$(prepare_fix_workflow "$alerts_json")
+    [ $? -ne 0 ] && return
     
-    if [ "$pm" = "unknown" ]; then
-        print_warning "No se detectó gestor de paquetes en este directorio"
-        return
-    fi
+    local branch_name=$(create_fix_branch "$package_names")
     
-    echo -e "Gestor de paquetes: ${GREEN}$pm${NC}"
+    echo ""
+    print_info "🔧 Intentando reparar vulnerabilidades en todos los subdirectorios..."
+    echo ""
     
-    if has_uncommitted_changes; then
-        print_warning "Hay cambios sin commitear. Saltando..."
-        return
-    fi
+    while IFS= read -r subdir; do
+        echo ""
+        print_info "📂 Procesando $subdir..."
+        cd "$subdir" || continue
+        
+        local pm=$(detect_package_manager)
+        if [ "$pm" != "unknown" ]; then
+            printf "Gestor de paquetes: ${GREEN}%s${NC}\n" "$pm"
+            apply_fixes "$pm" "$alerts_json"
+        fi
+        
+        cd - > /dev/null
+    done < <(echo "$subdirs")
     
-    local default_branch=$(get_default_branch)
-    print_info "📥 Sincronizando con remoto ($default_branch)..."
-    git pull --rebase origin "$default_branch" 2>/dev/null || print_warning "No se pudo hacer pull (puede no tener remoto configurado)"
+    finalize_fix_workflow "$alerts_count" "$branch_name" "$package_names"
+}
+
+run_fix_mode_single() {
+    local alerts_json=$1
+    local alerts_count=$2
+    local pm=$3
     
-    local package_names=$(echo "$alerts_json" | jq -r 'map(select(.is_auto_fixable == true)) | .[].dependency.package.name' | sort -u | tr '\n' ', ' | sed 's/,$//')
+    printf "Gestor de paquetes: ${GREEN}%s${NC}\n" "$pm"
+    
+    local package_names=$(prepare_fix_workflow "$alerts_json")
+    [ $? -ne 0 ] && return
     
     local branch_name=$(create_fix_branch "$package_names")
     
@@ -67,11 +77,5 @@ run_fix_mode_in_directory() {
     
     apply_fixes "$pm" "$alerts_json"
     
-    if has_uncommitted_changes; then
-        handle_commit_workflow "$alerts_count" "$branch_name" "$package_names"
-    else
-        checkout_main_branch
-        git branch -D "$branch_name" 2>/dev/null
-        print_warning "No se pudieron aplicar correcciones automáticas"
-    fi
+    finalize_fix_workflow "$alerts_count" "$branch_name" "$package_names"
 }

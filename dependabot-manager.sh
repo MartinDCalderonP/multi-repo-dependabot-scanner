@@ -14,6 +14,7 @@ source "$SCRIPT_DIR/lib/message-builders.sh"
 source "$SCRIPT_DIR/lib/git-operations.sh"
 source "$SCRIPT_DIR/lib/repository-processing.sh"
 source "$SCRIPT_DIR/lib/check-mode.sh"
+source "$SCRIPT_DIR/lib/fix-workflow.sh"
 source "$SCRIPT_DIR/lib/fix-mode.sh"
 source "$SCRIPT_DIR/lib/commit-workflow.sh"
 

@@ -29,11 +29,7 @@ commit_fixes() {
     local alerts_count=$1
     local package_names=$2
     
-    git add package.json 2>/dev/null
-    git add pnpm-lock.yaml 2>/dev/null
-    git add pnpm-workspace.yaml 2>/dev/null
-    git add yarn.lock 2>/dev/null
-    git add package-lock.json 2>/dev/null
+    git add -A
     
     if git diff --cached --quiet; then
         print_warning "No hay cambios staged para commitear"

@@ -9,7 +9,7 @@ Modular tool to scan and manage Dependabot alerts across multiple GitHub reposit
 - **📦 Monorepo Support**: Automatically detects and processes monorepo subdirectories
 - **🌿 Smart Branch Detection**: Auto-detects main/master branch for PRs and commits
 - **📝 Descriptive Commits**: Includes package names in commits, PRs, and branch names
-- **♻️ DRY Architecture**: Modular, maintainable code with all files
+- **♻️ DRY Architecture**: Modular and maintainable code
 - **🔒 Secure**: No hardcoded credentials, uses GitHub CLI authentication
 
 ## 📁 Project Structure
@@ -30,12 +30,13 @@ multi-repo-dependabot-scanner/
 │   ├── git-operations.sh         # Git commands
 │   ├── repository-processing.sh  # Repo iteration
 │   ├── check-mode.sh             # Check display
+│   ├── fix-workflow.sh           # Fix workflow helpers
 │   ├── fix-mode.sh               # Fix orchestration
 │   └── commit-workflow.sh        # Interactive workflow
 └── README.md
 ```
 
-**✅ All 15 modules**
+**✅ All 16 modules**
 
 ## 🚀 Usage
 
@@ -80,7 +81,8 @@ Commands:
 Automatically detects monorepo structures:
 
 - Checks for `package.json` in subdirectories when root lacks it
-- Processes each subdirectory independently
+- Processes all subdirectories with a single branch
+- Creates one consolidated PR with all changes from all subdirectories
 - Enriches alerts with correct versions from each workspace
 
 ### Breaking Change Detection
@@ -165,6 +167,28 @@ Check mode display:
 
 - `display_check_mode()` - Shows categorized alerts without fixes
 
+### `fix-workflow.sh`
+
+Fix workflow helpers:
+
+- `prepare_fix_workflow()` - Validates state, syncs with remote, extracts package names
+- `finalize_fix_workflow()` - Handles commit workflow or cleanup if no changes
+
+### `fix-mode.sh`
+
+Automatic fix orchestration:
+
+- `run_fix_mode()` - Detects monorepo vs single repo and delegates
+- `run_fix_mode_monorepo()` - Processes all subdirectories with single PR
+- `run_fix_mode_single()` - Processes single repository
+
+### `commit-workflow.sh`
+
+Interactive Git workflow:
+
+- `handle_commit_workflow()` - Shows changes and prompts user with validation
+- `execute_full_workflow()` - Executes commit → push → PR
+
 ### `summaries.sh`
 
 Report summaries and headers:
@@ -181,7 +205,7 @@ Git operations:
 - `create_fix_branch()` - Creates branch with package names
 - `commit_fixes()` - Commits with descriptive message
 - `push_branch()`, `create_pull_request()` - Push and PR creation
-- `checkout_main_branch()`, `discard_changes()`, `has_uncommitted_changes()`
+- `checkout_main_branch()`, `discard_changes()`, `delete_branch()`, `has_uncommitted_changes()`
 
 ### `repository-processing.sh`
 
@@ -190,20 +214,6 @@ Repository processing:
 - `process_repositories()` - Iterates workspace directories
 - `process_single_repository()` - Fetches alerts from GitHub API
 - `process_alerts()` - Enriches alerts (with monorepo support) and displays/fixes
-
-### `fix-mode.sh`
-
-Automatic fix orchestration:
-
-- `run_fix_mode()` - Handles monorepo detection and delegates
-- `run_fix_mode_in_directory()` - Executes fix workflow: sync, create branch, apply fixes, commit
-
-### `commit-workflow.sh`
-
-Interactive Git workflow:
-
-- `handle_commit_workflow()` - Shows changes and prompts user
-- `execute_full_workflow()` - Executes commit → push → PR
 
 ## 📊 Output Example
 
