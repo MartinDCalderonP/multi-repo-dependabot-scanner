@@ -12,6 +12,10 @@ detect_package_manager() {
     fi
 }
 
+find_monorepo_subdirs() {
+    find . -maxdepth 2 -name "package.json" -not -path "*/node_modules/*" -exec dirname {} \; 2>/dev/null | grep -v "^\.$"
+}
+
 get_installed_version() {
     local pm=$1
     local package_name=$2

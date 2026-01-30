@@ -13,7 +13,36 @@ run_fix_mode() {
     local pm=$(detect_package_manager)
     
     if [ "$pm" = "unknown" ]; then
-        print_warning "No se detectó gestor de paquetes"
+        local subdirs=$(find_monorepo_subdirs)
+        
+        if [ -n "$subdirs" ]; then
+            print_info "📦 Detectado monorepo con subdirectorios"
+            echo "$subdirs" | while IFS= read -r subdir; do
+                echo ""
+                print_info "📂 Procesando $subdir..."
+                cd "$subdir" || continue
+                run_fix_mode_in_directory "$alerts_json" "$alerts_count" "$auto_fixable"
+                cd - > /dev/null
+            done
+            return
+        else
+            print_warning "No se detectó gestor de paquetes"
+            return
+        fi
+    fi
+    
+    run_fix_mode_in_directory "$alerts_json" "$alerts_count" "$auto_fixable"
+}
+
+run_fix_mode_in_directory() {
+    local alerts_json=$1
+    local alerts_count=$2
+    local auto_fixable=$3
+    
+    local pm=$(detect_package_manager)
+    
+    if [ "$pm" = "unknown" ]; then
+        print_warning "No se detectó gestor de paquetes en este directorio"
         return
     fi
     
@@ -44,46 +73,5 @@ run_fix_mode() {
         checkout_main_branch
         git branch -D "$branch_name" 2>/dev/null
         print_warning "No se pudieron aplicar correcciones automáticas"
-    fi
-}
-
-apply_fixes() {
-    local pm=$1
-    local alerts_json=$2
-    
-    fix_vulnerabilities "$pm" "$alerts_json"
-    apply_yarn_resolutions "$pm" "$alerts_json"
-    
-    if has_uncommitted_changes; then
-        print_success "Se aplicaron correcciones automáticas"
-    else
-        print_warning "No se pudieron aplicar correcciones automáticas (pueden ser dependencias indirectas sin override)"
-    fi
-}
-
-apply_yarn_resolutions() {
-    local pm=$1
-    local alerts_json=$2
-    
-    [ "$pm" != "yarn" ] && return
-    
-    echo ""
-    print_info "🔍 Verificando alertas restantes..."
-    
-    echo "$alerts_json" | jq -c '.[]' | while read -r alert; do
-        local package_name=$(echo "$alert" | jq -r '.dependency.package.name')
-        local patched_version=$(echo "$alert" | jq -r '.security_vulnerability.first_patched_version.identifier // empty')
-        local patched_major=$(echo "$patched_version" | cut -d'.' -f1)
-        
-        if [ -n "$patched_version" ] && [ "$patched_major" -lt 2 ] 2>/dev/null; then
-            echo -e "   ${CYAN}Agregando resolution para $package_name...${NC}"
-            add_yarn_resolutions "$package_name" "$patched_version"
-        fi
-    done
-    
-    if has_uncommitted_changes; then
-        echo ""
-        print_info "Reinstalando con resolutions..."
-        yarn install 2>/dev/null
     fi
 }

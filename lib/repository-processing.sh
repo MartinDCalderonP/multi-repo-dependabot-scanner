@@ -45,7 +45,19 @@ process_alerts() {
     local alerts_count=$4
     
     local pm=$(detect_package_manager)
-    if [ "$pm" != "unknown" ]; then
+    
+    if [ "$pm" = "unknown" ]; then
+        local subdirs=$(find_monorepo_subdirs | head -1)
+        
+        if [ -n "$subdirs" ]; then
+            cd "$subdirs" 2>/dev/null || true
+            pm=$(detect_package_manager)
+            if [ "$pm" != "unknown" ]; then
+                alerts_json=$(enrich_alerts_with_versions "$alerts_json" "$pm")
+            fi
+            cd - > /dev/null
+        fi
+    else
         alerts_json=$(enrich_alerts_with_versions "$alerts_json" "$pm")
     fi
     
