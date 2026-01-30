@@ -18,15 +18,17 @@ get_default_branch() {
 }
 
 create_fix_branch() {
-    local branch_name="fix/dependabot-alerts-$(date +%Y%m%d)"
+    local package_names=$1
+    local branch_name=$(build_branch_name "$package_names")
+    
     git checkout -b "$branch_name" 2>/dev/null || git checkout "$branch_name"
     echo "$branch_name"
 }
 
 commit_fixes() {
     local alerts_count=$1
+    local package_names=$2
     
-    # Add all changes to package files (modified or new)
     git add package.json 2>/dev/null
     git add pnpm-lock.yaml 2>/dev/null
     git add pnpm-workspace.yaml 2>/dev/null
@@ -38,7 +40,9 @@ commit_fixes() {
         return 1
     fi
     
-    git commit -m "fix: resolve Dependabot security alerts
+    local commit_title=$(build_fix_title "$package_names")
+    
+    git commit -m "$commit_title
 
 - Applied automatic fixes with audit fix
 - Added resolutions for transitive dependencies
@@ -54,15 +58,18 @@ push_branch() {
 
 create_pull_request() {
     local alerts_count=$1
+    local package_names=$2
     local default_branch=$(get_default_branch)
     
-    gh pr create --title "fix: resolve Dependabot security alerts" \
-               --body "Automated fixes for Dependabot security alerts.
-
+    local pr_title=$(build_fix_title "$package_names")
+    local package_list=$(build_package_list "$package_names")
+    
+    gh pr create --title "$pr_title" \
+               --body "Automated fixes for Dependabot security alerts.$package_list
 ## Changes
 - Applied \`audit fix\` to resolve vulnerabilities
 - Added Yarn resolutions for transitive dependencies
-- Updated packages to patched versions
+- Updated vulnerable packages to patched versions
 
 ## Security
 Resolves $alerts_count open Dependabot security alerts." \
