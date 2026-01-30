@@ -1,24 +1,41 @@
 # Multi-Repo Dependabot Scanner
 
-Modular tool to scan and manage Dependabot alerts across multiple GitHub repositories.
+Modular tool to scan and manage Dependabot alerts across multiple GitHub repositories with intelligent version detection and automated fixes.
+
+## ✨ Key Features
+
+- **🎯 Accurate Breaking Change Detection**: Detects real installed versions instead of assuming from version ranges
+- **🔧 Surgical Updates**: Only updates vulnerable packages, not all dependencies
+- **📦 Monorepo Support**: Automatically detects and processes monorepo subdirectories
+- **🌿 Smart Branch Detection**: Auto-detects main/master branch for PRs and commits
+- **📝 Descriptive Commits**: Includes package names in commits, PRs, and branch names
+- **♻️ DRY Architecture**: Modular, maintainable code with all files
+- **🔒 Secure**: No hardcoded credentials, uses GitHub CLI authentication
 
 ## 📁 Project Structure
 
 ```
 multi-repo-dependabot-scanner/
-├── dependabot-manager.sh       # Main script (~250 lines)
+├── dependabot-manager.sh          # Main orchestrator
 ├── lib/
-│   ├── colors.sh              # Color definitions (8 lines)
-│   ├── package-managers.sh    # Package operations (57 lines)
-│   ├── alerts.sh              # Alert analysis (29 lines)
-│   ├── formatters.sh          # Alert formatting (31 lines)
-│   ├── alert-lists.sh         # Alert lists (37 lines)
-│   ├── summaries.sh           # Summaries and headers (67 lines)
-│   └── git-operations.sh      # Git operations (63 lines)
+│   ├── colors.sh                 # Color definitions
+│   ├── utils.sh                  # General utilities
+│   ├── package-managers.sh       # Package detection
+│   ├── package-fixes.sh          # Fix operations
+│   ├── alerts.sh                 # Alert enrichment
+│   ├── formatters.sh             # Alert formatting
+│   ├── alert-lists.sh            # Alert displays
+│   ├── message-builders.sh       # Commit/PR messages
+│   ├── summaries.sh              # Report summaries
+│   ├── git-operations.sh         # Git commands
+│   ├── repository-processing.sh  # Repo iteration
+│   ├── check-mode.sh             # Check display
+│   ├── fix-mode.sh               # Fix orchestration
+│   └── commit-workflow.sh        # Interactive workflow
 └── README.md
 ```
 
-**✅ All files < 100 lines**
+**✅ All 15 modules**
 
 ## 🚀 Usage
 
@@ -42,132 +59,173 @@ Commands:
 
 **Smart Detection:** If run from `multi-repo-dependabot-scanner/`, it automatically analyzes sibling directories in the parent folder.
 
+## 🎯 How It Works
+
+### Workflow Overview
+
+1. **Repository Discovery**: Scans sibling directories or specified path
+2. **Alert Fetching**: Uses GitHub CLI to fetch Dependabot alerts
+3. **Version Enrichment**: Extracts real installed versions from package managers (`pnpm why`, `yarn list`, `npm list`)
+4. **Classification**: Analyzes if updates are auto-fixable or breaking changes based on real versions
+5. **Fix Application** (fix mode):
+   - Syncs with remote main/master branch
+   - Creates descriptive branch with package names
+   - Applies targeted updates only to vulnerable packages
+   - Commits with descriptive message including package names
+   - Creates pull request with change summary
+
+### Monorepo Support
+
+Automatically detects monorepo structures:
+
+- Checks for `package.json` in subdirectories when root lacks it
+- Processes each subdirectory independently
+- Enriches alerts with correct versions from each workspace
+
+### Breaking Change Detection
+
+- Compares **real installed major version** vs **patched major version**
+- Auto-fixable: `patched_major <= current_major` (e.g., 8.57.1 → 8.60.0)
+- Breaking change: `patched_major > current_major` (e.g., 8.57.1 → 9.26.0)
+- No false positives from version range assumptions
+
 ## 📦 Modules
 
-### `dependabot-manager.sh` (50 lines)
+Main orchestrator that loads all modules and executes the workflow
 
-Main script that loads modules and executes `main()`
+### `dependabot-manager.sh`
 
-### `colors.sh` (10 lines)
+Main orchestrator that loads all 15 modules and executes `main()`
 
-Terminal color constants
+### `colors.sh`
 
-### `utils.sh` (45 lines) ✨ DRY
+Terminal color constants for formatted output
+
+### `utils.sh` ✨ DRY
 
 Reusable utility functions:
 
-- `prompt_yes_no()` - Interactive yes/no prompt
-- `print_success()` - Success message
-- `print_warning()` - Warning message
-- `print_info()` - Info message
-- `print_error()` - Error message
-- `print_separator()` - Separator line
+- `prompt_yes_no()` - Interactive yes/no prompts
+- `print_success()`, `print_warning()`, `print_info()`, `print_error()` - Colored messages
+- `print_separator()` - Visual separators
 
-### `package-managers.sh` (54 lines)
+### `package-managers.sh`
 
-Package manager management:
+Package manager detection and operations:
 
-- `detect_package_manager()` - Detects npm/yarn/pnpm
-- `fix_vulnerabilities()` - Runs audit fix
-- `add_yarn_resolutions()` - Adds resolutions to package.json
+- `detect_package_manager()` - Detects npm/yarn/pnpm by lockfile
+- `find_monorepo_subdirs()` - Finds subdirectories with package.json
+- `get_installed_version()` - Extracts real installed version from package manager
+- `fix_vulnerabilities()` - Runs audit fix + targeted updates
+- `add_yarn_resolutions()` - Adds Yarn resolutions to package.json
 
-### `alerts.sh` (31 lines)
+### `package-fixes.sh`
 
-Alert analysis:
+Fix orchestration:
 
-- `calculate_alert_metrics()` - Calculates metrics
-- `get_severity_counts()` - Counts by severity
+- `apply_fixes()` - Applies fixes and shows results
+- `apply_yarn_resolutions()` - Iterates alerts and adds Yarn resolutions
 
-### `formatters.sh` (33 lines)
+### `alerts.sh`
+
+Alert enrichment and classification:
+
+- `enrich_alerts_with_versions()` - Adds `installed_version`, `current_major`, `patched_major`, `is_auto_fixable`, `is_breaking` to alerts
+- `calculate_alert_metrics()` - Uses pre-computed fields for metrics
+- `get_severity_counts()` - Counts by severity level
+
+### `formatters.sh`
 
 Alert formatting:
 
-- `print_severity_badge()` - Severity badge
-- `display_alert()` - Consistent format (DRY)
+- `print_severity_badge()` - Colored severity badges
+- `display_alert()` - Consistent alert display format (DRY)
 
-### `alert-lists.sh` (33 lines)
+### `alert-lists.sh`
 
 Alert lists by category:
 
-- `display_auto_fixable_alerts()`
-- `display_breaking_alerts()`
-- `display_unfixable_alerts()`
+- `display_alerts_by_version_comparison()` - Generic display using `is_auto_fixable`/`is_breaking`
+- `display_auto_fixable_alerts()` - Wrapper for auto-fixable
+- `display_breaking_alerts()` - Wrapper for breaking changes
+- `display_unfixable_alerts()` - Alerts without patches
 
-### `check-mode.sh` (34 lines)
+### `message-builders.sh`
 
-Check mode:
+Commit and PR message generation:
 
-- `display_check_mode()` - Shows categorized alerts
+- `build_fix_title()` - Creates "fix: update package1, package2"
+- `build_package_list()` - Markdown list of packages
+- `build_branch_name()` - Creates "fix/dependabot-packages-date"
 
-### `summaries.sh` (68 lines)
+### `check-mode.sh`
 
-Summaries and headers:
+Check mode display:
 
-- `display_repo_header()`
-- `display_severity_summary()`
-- `display_final_summary()`
+- `display_check_mode()` - Shows categorized alerts without fixes
 
-### `git-operations.sh` (59 lines)
+### `summaries.sh`
+
+Report summaries and headers:
+
+- `display_repo_header()` - Repository header with alert count
+- `display_severity_summary()` - Severity breakdown
+- `display_final_summary()` - Overall statistics
+
+### `git-operations.sh`
 
 Git operations:
 
-- `create_fix_branch()`, `commit_fixes()`
-- `push_branch()`, `create_pull_request()`
-- `has_uncommitted_changes()`
+- `get_default_branch()` - Detects main/master branch
+- `create_fix_branch()` - Creates branch with package names
+- `commit_fixes()` - Commits with descriptive message
+- `push_branch()`, `create_pull_request()` - Push and PR creation
+- `checkout_main_branch()`, `discard_changes()`, `has_uncommitted_changes()`
 
-### `repository-processing.sh` (67 lines)
+### `repository-processing.sh`
 
 Repository processing:
 
-- `process_repositories()` - Iterates repos
-- `process_single_repository()` - Fetches alerts
-- `process_alerts()` - Calculates metrics
+- `process_repositories()` - Iterates workspace directories
+- `process_single_repository()` - Fetches alerts from GitHub API
+- `process_alerts()` - Enriches alerts (with monorepo support) and displays/fixes
 
-### `fix-mode.sh` (80 lines)
+### `fix-mode.sh`
 
-Automatic fixes:
+Automatic fix orchestration:
 
-- `run_fix_mode()` - Executes fixes
-- `apply_fixes()` - Applies audit fix
-- `apply_yarn_resolutions()` - Yarn resolutions
+- `run_fix_mode()` - Handles monorepo detection and delegates
+- `run_fix_mode_in_directory()` - Executes fix workflow: sync, create branch, apply fixes, commit
 
-### `commit-workflow.sh` (71 lines)
+### `commit-workflow.sh`
 
 Interactive Git workflow:
 
-- `handle_commit_workflow()` - Main orchestrator
-- `prompt_review_changes()` - Review changes
-- `prompt_create_commit()` - Create commit
-- `execute_commit_workflow()` - Execute workflow
-- `prompt_push()` - Push to remote
-- `prompt_create_pr()` - Create PR
+- `handle_commit_workflow()` - Shows changes and prompts user
+- `execute_full_workflow()` - Executes commit → push → PR
 
-## ✨ Refactoring Benefits
+## 📊 Output Example
 
-### 1. **Separation of Concerns**
+```
+📦 Repositorio: username/my-app
+🚨 4 alertas encontradas
+═══════════════════════════════════════════
+   ⚠️  2 altas
+   ⚠️  2 medias
 
-Each module has a clear and unique responsibility.
+   ✓ 3 auto-resolvibles
+   ⚠ 1 requieren actualización manual (breaking change)
 
-### 2. **DRY (Don't Repeat Yourself)**
+   Alertas auto-resolvibles:
+   ✓ [HIGH] Vulnerability in tar - tar → v7.5.7
+   ✓ [MEDIUM] Issue in micromatch - micromatch → v4.0.8
+   ✓ [MEDIUM] Issue in path-to-regexp - path-to-regexp → v0.1.12
 
-- `display_alert()` function reused for all alert types
-- Centralized color logic
-- Shared Git operations
+   Requieren actualización manual (breaking change):
+   ⚠ [HIGH] eslint Stack Overflow - eslint → v9.26.0
+```
 
-### 3. **Maintainability**
-
-- Easy to locate and modify specific functionality
-- Changes in one module don't affect others
-
-### 4. **Testable**
-
-Each module can be tested independently.
-
-### 5. **Extensible**
-
-Easy to add new package managers or alert types.
-
-## � Requirements
+## 🔧 Requirements
 
 - GitHub CLI (`gh`) installed and authenticated
 - `jq` for JSON processing
@@ -178,3 +236,4 @@ Easy to add new package managers or alert types.
 - No hardcoded paths or credentials
 - Uses GitHub CLI authentication (managed locally)
 - Safe to share and publish publicly
+- Only updates explicitly vulnerable packages
