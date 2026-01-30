@@ -3,6 +3,7 @@
 handle_commit_workflow() {
     local alerts_count=$1
     local branch_name=$2
+    local package_names=$3
     
     repos_fixed=$((repos_fixed + 1))
     
@@ -16,7 +17,7 @@ handle_commit_workflow() {
     echo ""
     
     if prompt_yes_no "¿Crear commit, push y PR?" create_all; then
-        execute_full_workflow "$alerts_count" "$branch_name"
+        execute_full_workflow "$alerts_count" "$branch_name" "$package_names"
     else
         checkout_main_branch
         discard_changes
@@ -27,8 +28,9 @@ handle_commit_workflow() {
 execute_full_workflow() {
     local alerts_count=$1
     local branch_name=$2
+    local package_names=$3
     
-    if ! commit_fixes "$alerts_count"; then
+    if ! commit_fixes "$alerts_count" "$package_names"; then
         checkout_main_branch
         return 1
     fi
@@ -38,7 +40,7 @@ execute_full_workflow() {
     if push_branch "$branch_name"; then
         print_success "Push realizado"
         
-        if create_pull_request "$alerts_count"; then
+        if create_pull_request "$alerts_count" "$package_names"; then
             print_success "Pull Request creado"
         else
             print_warning "No se pudo crear el PR (puede que ya exista)"

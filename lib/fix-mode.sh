@@ -28,7 +28,9 @@ run_fix_mode() {
     print_info "📥 Sincronizando con remoto ($default_branch)..."
     git pull --rebase origin "$default_branch" 2>/dev/null || print_warning "No se pudo hacer pull (puede no tener remoto configurado)"
     
-    local branch_name=$(create_fix_branch)
+    local package_names=$(echo "$alerts_json" | jq -r 'map(select(.is_auto_fixable == true)) | .[].dependency.package.name' | sort -u | tr '\n' ', ' | sed 's/,$//')
+    
+    local branch_name=$(create_fix_branch "$package_names")
     
     echo ""
     print_info "🔧 Intentando reparar vulnerabilidades auto-resolvibles..."
@@ -37,7 +39,7 @@ run_fix_mode() {
     apply_fixes "$pm" "$alerts_json"
     
     if has_uncommitted_changes; then
-        handle_commit_workflow "$alerts_count" "$branch_name"
+        handle_commit_workflow "$alerts_count" "$branch_name" "$package_names"
     else
         checkout_main_branch
         git branch -D "$branch_name" 2>/dev/null
