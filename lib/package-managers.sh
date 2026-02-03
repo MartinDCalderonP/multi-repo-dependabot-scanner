@@ -64,7 +64,20 @@ fix_vulnerabilities() {
             pnpm install 2>/dev/null
             ;;
         "yarn")
-            print_info "   Yarn no soporta audit fix, usando resolutions..."
+            print_info "   Aplicando resolutions para dependencias transitivas..."
+            local success=false
+            while IFS= read -r alert; do
+                local pkg=$(echo "$alert" | jq -r '.dependency.package.name')
+                local version=$(echo "$alert" | jq -r '.security_vulnerability.first_patched_version.identifier')
+                if add_yarn_resolutions "$pkg" "$version"; then
+                    success=true
+                fi
+            done < <(echo "$alerts_json" | jq -c 'map(select(.is_auto_fixable == true)) | .[]')
+            
+            if [ "$success" = true ]; then
+                print_info "   Ejecutando: yarn install"
+                yarn install 2>/dev/null
+            fi
             ;;
         "npm")
             print_info "   Ejecutando: npm audit fix --force"
