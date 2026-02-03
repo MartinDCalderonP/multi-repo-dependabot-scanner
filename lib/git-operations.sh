@@ -62,7 +62,7 @@ create_pull_request() {
     local pr_title=$(build_fix_title "$package_names")
     local package_list=$(build_package_list "$package_names")
     
-    gh pr create --title "$pr_title" \
+    local pr_url=$(gh pr create --title "$pr_title" \
                --body "Automated fixes for Dependabot security alerts.$package_list
 ## Changes
 - Applied \`audit fix\` to resolve vulnerabilities
@@ -71,7 +71,13 @@ create_pull_request() {
 
 ## Security
 Resolves $alerts_count open Dependabot security alerts." \
-               --base "$default_branch"
+               --base "$default_branch" 2>&1)
+    
+    if [[ $pr_url == https://* ]]; then
+        created_pr_urls+=("$pr_url")
+    fi
+    
+    echo "$pr_url"
 }
 
 checkout_main_branch() {

@@ -33,6 +33,7 @@ total_fixable=0
 total_breaking=0
 total_unfixable=0
 repos_fixed=0
+created_pr_urls=()
 
 main() {
     echo "🔍 Analizador de Alertas de Dependabot"
@@ -44,6 +45,15 @@ main() {
     display_final_summary "$total_repos" "$repos_with_alerts" "$total_alerts" \
                          "$total_fixable" "$total_breaking" "$total_unfixable" \
                          "$MODE" "$repos_fixed"
+    
+    if [ ${#created_pr_urls[@]} -gt 0 ]; then
+        echo ""
+        echo -e "${CYAN}🔗 Pull Requests creados:${NC}"
+        echo "══════════════════════════════════════"
+        for pr_url in "${created_pr_urls[@]}"; do
+            echo "   $pr_url"
+        done
+    fi
 }
 
 main
