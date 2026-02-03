@@ -7,8 +7,11 @@ Modular tool to scan and manage Dependabot alerts across multiple GitHub reposit
 - **🎯 Accurate Breaking Change Detection**: Detects real installed versions instead of assuming from version ranges
 - **🔧 Surgical Updates**: Only updates vulnerable packages, not all dependencies
 - **📦 Monorepo Support**: Automatically detects and processes monorepo subdirectories
-- **🌿 Smart Branch Detection**: Auto-detects main/master branch for PRs and commits
-- **📝 Descriptive Commits**: Includes package names in commits, PRs, and branch names
+- **🧶 Yarn Berry Support**: Parses yarn.lock directly for transitive dependency versions (Yarn v2+)
+- **🎯 Single Repo Mode**: Target specific repositories with optional parameter
+- **🌿 Smart Branch Detection**: Auto-detects main/master/develop branch for PRs and commits
+- **📝 Dynamic PR Descriptions**: Package manager-specific descriptions with accurate alert counts
+- **🔗 PR Links Collection**: Displays all created PR URLs at the end for quick access
 - **♻️ DRY Architecture**: Modular and maintainable code
 - **🔒 Secure**: No hardcoded credentials, uses GitHub CLI authentication
 
@@ -21,6 +24,7 @@ multi-repo-dependabot-scanner/
 │   ├── colors.sh                 # Color definitions
 │   ├── utils.sh                  # General utilities
 │   ├── package-managers.sh       # Package detection
+│   ├── yarn-fixes.sh             # Yarn-specific operations
 │   ├── package-fixes.sh          # Fix operations
 │   ├── alerts.sh                 # Alert enrichment
 │   ├── formatters.sh             # Alert formatting
@@ -36,27 +40,35 @@ multi-repo-dependabot-scanner/
 └── README.md
 ```
 
-**✅ All 16 modules**
-
 ## 🚀 Usage
 
 The script automatically detects its location and analyzes repositories:
 
 ```bash
-# From the parent directory containing repos
+# Check all repositories in parent directory
 cd /path/to/repos
 ./multi-repo-dependabot-scanner/dependabot-manager.sh check
+
+# Check specific repository only
+./multi-repo-dependabot-scanner/dependabot-manager.sh check my-repo-name
+
+# Fix all repositories
+./multi-repo-dependabot-scanner/dependabot-manager.sh fix
+
+# Fix specific repository only
+./multi-repo-dependabot-scanner/dependabot-manager.sh fix my-repo-name
 
 # Or from within the script directory (auto-detects parent)
 cd multi-repo-dependabot-scanner
 ./dependabot-manager.sh check
+./dependabot-manager.sh check specific-repo
 ```
 
 Commands:
 
-- `check` - Display alerts only
-- `fix` - Attempt to fix auto-resolvable alerts
-- `both` - Check and fix in sequence
+- `check [repo]` - Display alerts only (optionally for specific repo)
+- `fix [repo]` - Attempt to fix auto-resolvable alerts (optionally for specific repo)
+- `both [repo]` - Check and fix in sequence (optionally for specific repo)
 
 **Smart Detection:** If run from `multi-repo-dependabot-scanner/`, it automatically analyzes sibling directories in the parent folder.
 
@@ -64,17 +76,17 @@ Commands:
 
 ### Workflow Overview
 
-1. **Repository Discovery**: Scans sibling directories or specified path
+1. **Repository Discovery**: Scans sibling directories or specified repository
 2. **Alert Fetching**: Uses GitHub CLI to fetch Dependabot alerts
-3. **Version Enrichment**: Extracts real installed versions from package managers (`pnpm why`, `yarn list`, `npm list`)
-4. **Classification**: Analyzes if updates are auto-fixable or breaking changes based on real versions
+3. **Version Enrichment**: Extracts real installed versions (pnpm/npm/yarn v1/yarn Berry)
+4. **Classification**: Analyzes if updates are auto-fixable or breaking changes
 5. **Fix Application** (fix mode):
-   - Syncs with remote main/master branch
-   - Creates descriptive branch with package names
-   - Applies targeted updates only to vulnerable packages
-   - Shows changes and prompts user for confirmation
-   - If confirmed: commits, pushes, and creates PR with descriptive messages
-   - If rejected: discards changes, deletes temporary branch, and returns to main
+   - Syncs with remote (main/master/develop)
+   - Creates descriptive branch
+   - Applies targeted updates to vulnerable packages
+   - Prompts for confirmation
+   - Creates PR with package manager-specific descriptions
+6. **PR Collection**: Displays all created PR URLs at the end
 
 ### Monorepo Support
 
@@ -104,13 +116,9 @@ Main orchestrator that loads all 15 modules and executes `main()`
 
 Terminal color constants for formatted output
 
-### `utils.sh` ✨ DRY
+### `utils.sh`
 
-Reusable utility functions:
-
-- `prompt_yes_no()` - Interactive yes/no prompts
-- `print_success()`, `print_warning()`, `print_info()`, `print_error()` - Colored messages
-- `print_separator()` - Visual separators
+Reusable utility functions for prompts, pluralization, git checks, and colored output.
 
 ### `package-managers.sh`
 
@@ -118,9 +126,14 @@ Package manager detection and operations:
 
 - `detect_package_manager()` - Detects npm/yarn/pnpm by lockfile
 - `find_monorepo_subdirs()` - Finds subdirectories with package.json
-- `get_installed_version()` - Extracts real installed version from package manager
-- `fix_vulnerabilities()` - Runs audit fix + targeted updates
-- `add_yarn_resolutions()` - Adds Yarn resolutions to package.json
+- `get_installed_version()` - Extracts real installed version (Yarn Berry parses yarn.lock directly)
+- `fix_vulnerabilities()` - Runs fixes specific to each PM
+
+### `yarn-fixes.sh`
+
+Yarn-specific operations:
+
+- `add_yarn_resolutions()` - Adds Yarn resolutions to package.json for transitive deps
 
 ### `package-fixes.sh`
 
@@ -131,89 +144,47 @@ Fix orchestration:
 
 ### `alerts.sh`
 
-Alert enrichment and classification:
-
-- `enrich_alerts_with_versions()` - Adds `installed_version`, `current_major`, `patched_major`, `is_auto_fixable`, `is_breaking` to alerts
-- `calculate_alert_metrics()` - Uses pre-computed fields for metrics
-- `get_severity_counts()` - Counts by severity level
+Alert enrichment with real versions and classification (auto-fixable/breaking/unfixable).
 
 ### `formatters.sh`
 
-Alert formatting:
-
-- `print_severity_badge()` - Colored severity badges
-- `display_alert()` - Consistent alert display format (DRY)
+Alert formatting and colored severity badges.
 
 ### `alert-lists.sh`
 
-Alert lists by category:
-
-- `display_alerts_by_version_comparison()` - Generic display using `is_auto_fixable`/`is_breaking`
-- `display_auto_fixable_alerts()` - Wrapper for auto-fixable
-- `display_breaking_alerts()` - Wrapper for breaking changes
-- `display_unfixable_alerts()` - Alerts without patches
+Alert displays by category (auto-fixable, breaking, unfixable).
 
 ### `message-builders.sh`
 
-Commit and PR message generation:
-
-- `build_fix_title()` - Creates "fix: update package1, package2"
-- `build_package_list()` - Markdown list of packages
-- `build_branch_name()` - Creates "fix/dependabot-packages-date"
+Commit and PR message generation with package manager-specific descriptions.
 
 ### `check-mode.sh`
 
-Check mode display:
-
-- `display_check_mode()` - Shows categorized alerts without fixes
+Check mode display without fixes.
 
 ### `fix-workflow.sh`
 
-Fix workflow helpers:
-
-- `prepare_fix_workflow()` - Validates state, syncs with remote, extracts package names
-- `finalize_fix_workflow()` - Handles commit workflow or cleanup if no changes
+Fix workflow preparation and finalization.
 
 ### `fix-mode.sh`
 
-Automatic fix orchestration:
-
-- `run_fix_mode()` - Detects monorepo vs single repo and delegates
-- `run_fix_mode_monorepo()` - Processes all subdirectories with single PR
-- `run_fix_mode_single()` - Processes single repository
+Automatic fix orchestration for single repos and monorepos.
 
 ### `commit-workflow.sh`
 
-Interactive Git workflow:
-
-- `handle_commit_workflow()` - Shows changes and prompts user with validation
-- `execute_full_workflow()` - Executes commit → push → PR
+Interactive Git workflow with user confirmation.
 
 ### `summaries.sh`
 
-Report summaries and headers:
-
-- `display_repo_header()` - Repository header with alert count
-- `display_severity_summary()` - Severity breakdown
-- `display_final_summary()` - Overall statistics
+Report summaries and statistics.
 
 ### `git-operations.sh`
 
-Git operations:
-
-- `get_default_branch()` - Detects main/master branch
-- `create_fix_branch()` - Creates branch with package names
-- `commit_fixes()` - Commits with descriptive message
-- `push_branch()`, `create_pull_request()` - Push and PR creation
-- `checkout_main_branch()`, `discard_changes()`, `delete_branch()`, `has_uncommitted_changes()`
+Git operations including branch detection (main/master/develop), PR creation with dynamic descriptions, and URL collection.
 
 ### `repository-processing.sh`
 
-Repository processing:
-
-- `process_repositories()` - Iterates workspace directories
-- `process_single_repository()` - Fetches alerts from GitHub API
-- `process_alerts()` - Enriches alerts (with monorepo support) and displays/fixes
+Repository processing for all or single specified repos with alert fetching and enrichment.
 
 ## 📊 Output Example
 
