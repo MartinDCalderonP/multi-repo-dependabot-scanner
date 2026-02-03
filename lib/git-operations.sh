@@ -12,6 +12,8 @@ get_default_branch() {
         echo "main"
     elif git show-ref --verify --quiet refs/heads/master; then
         echo "master"
+    elif git show-ref --verify --quiet refs/heads/develop; then
+        echo "develop"
     else
         git branch --show-current
     fi

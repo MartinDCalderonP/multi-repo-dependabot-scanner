@@ -4,13 +4,13 @@ prepare_fix_workflow() {
     local alerts_json=$1
     
     if has_uncommitted_changes; then
-        print_warning "Hay cambios sin commitear. Saltando..."
+        print_warning "Hay cambios sin commitear. Saltando..." >&2
         return 1
     fi
     
     local default_branch=$(get_default_branch)
-    print_info "📥 Sincronizando con remoto ($default_branch)..."
-    git pull --rebase origin "$default_branch" 2>/dev/null || print_warning "No se pudo hacer pull (puede no tener remoto configurado)"
+    print_info "📥 Sincronizando con remoto ($default_branch)..." >&2
+    git pull --rebase origin "$default_branch" >&2 || print_warning "No se pudo hacer pull (puede no tener remoto configurado)" >&2
     
     local package_names=$(echo "$alerts_json" | jq -r 'map(select(.is_auto_fixable == true)) | .[].dependency.package.name' | sort -u | tr '\n' ', ' | sed 's/,$//')
     

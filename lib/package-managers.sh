@@ -26,7 +26,15 @@ get_installed_version() {
             version=$(pnpm why "$package_name" 2>&1 | grep -oE "$package_name [0-9]+\.[0-9]+\.[0-9]+" | head -1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
             ;;
         "yarn")
-            version=$(yarn list --pattern "$package_name" --depth=0 2>/dev/null | grep -oE "$package_name@[0-9]+\.[0-9]+\.[0-9]+" | head -1 | cut -d'@' -f2)
+            if [ -f "yarn.lock" ]; then
+                version=$(grep -A 1 "\"$package_name@npm:" yarn.lock 2>/dev/null | grep "version:" | grep -oE "[0-9]+\.[0-9]+\.[0-9]+" | head -1)
+            fi
+            if [ -z "$version" ]; then
+                version=$(yarn info "$package_name" 2>/dev/null | grep -E "Version:|@npm:" | head -1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+" | head -1)
+            fi
+            if [ -z "$version" ]; then
+                version=$(yarn list --pattern "$package_name" --depth=0 2>/dev/null | grep -oE "$package_name@[0-9]+\.[0-9]+\.[0-9]+" | head -1 | cut -d'@' -f2)
+            fi
             ;;
         "npm")
             version=$(npm list "$package_name" --depth=Infinity 2>&1 | grep -oE "$package_name@[0-9]+\.[0-9]+\.[0-9]+" | head -1 | cut -d'@' -f2)

@@ -44,10 +44,9 @@ calculate_alert_metrics() {
     local alerts_json=$1
     local alerts_count=$2
     
-    local fixable=$(echo "$alerts_json" | jq '[.[] | select(.patched_major != null)] | length' 2>/dev/null)
+    local unfixable=$(echo "$alerts_json" | jq '[.[] | select(.security_vulnerability.first_patched_version.identifier == null)] | length' 2>/dev/null)
     local breaking=$(echo "$alerts_json" | jq '[.[] | select(.is_breaking == true)] | length' 2>/dev/null)
     local auto_fixable=$(echo "$alerts_json" | jq '[.[] | select(.is_auto_fixable == true)] | length' 2>/dev/null)
-    local unfixable=$((alerts_count - fixable))
     
     echo "$auto_fixable $breaking $unfixable"
 }
