@@ -17,7 +17,7 @@ run_fix_mode() {
         
         if [ -n "$subdirs" ]; then
             print_info "📦 Detectado monorepo con subdirectorios"
-            run_fix_mode_monorepo "$alerts_json" "$alerts_count" "$subdirs"
+            run_fix_mode_monorepo "$alerts_json" "$auto_fixable" "$subdirs"
             return
         else
             print_warning "No se detectó gestor de paquetes"
@@ -25,12 +25,12 @@ run_fix_mode() {
         fi
     fi
     
-    run_fix_mode_single "$alerts_json" "$alerts_count" "$pm"
+    run_fix_mode_single "$alerts_json" "$auto_fixable" "$pm"
 }
 
 run_fix_mode_monorepo() {
     local alerts_json=$1
-    local alerts_count=$2
+    local auto_fixable=$2
     local subdirs=$3
     
     local package_names=$(prepare_fix_workflow "$alerts_json")
@@ -42,6 +42,7 @@ run_fix_mode_monorepo() {
     print_info "🔧 Intentando reparar vulnerabilidades en todos los subdirectorios..."
     echo ""
     
+    local last_pm="unknown"
     while IFS= read -r subdir; do
         echo ""
         print_info "📂 Procesando $subdir..."
@@ -51,17 +52,18 @@ run_fix_mode_monorepo() {
         if [ "$pm" != "unknown" ]; then
             printf "Gestor de paquetes: ${GREEN}%s${NC}\n" "$pm"
             apply_fixes "$pm" "$alerts_json"
+            last_pm="$pm"
         fi
         
         cd - > /dev/null
     done < <(echo "$subdirs")
     
-    finalize_fix_workflow "$alerts_count" "$branch_name" "$package_names"
+    finalize_fix_workflow "$auto_fixable" "$branch_name" "$package_names" "$last_pm"
 }
 
 run_fix_mode_single() {
     local alerts_json=$1
-    local alerts_count=$2
+    local auto_fixable=$2
     local pm=$3
     
     printf "Gestor de paquetes: ${GREEN}%s${NC}\n" "$pm"
@@ -77,5 +79,5 @@ run_fix_mode_single() {
     
     apply_fixes "$pm" "$alerts_json"
     
-    finalize_fix_workflow "$alerts_count" "$branch_name" "$package_names"
+    finalize_fix_workflow "$auto_fixable" "$branch_name" "$package_names" "$pm"
 }

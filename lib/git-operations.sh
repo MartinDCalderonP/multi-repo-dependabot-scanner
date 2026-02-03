@@ -55,22 +55,41 @@ push_branch() {
 }
 
 create_pull_request() {
-    local alerts_count=$1
+    local auto_fixable=$1
     local package_names=$2
+    local pm=$3
     local default_branch=$(get_default_branch)
     
     local pr_title=$(build_fix_title "$package_names")
     local package_list=$(build_package_list "$package_names")
     
+    local alert_word="alert"
+    [ "$auto_fixable" -gt 1 ] && alert_word="alerts"
+    
+    local changes_line1=""
+    local changes_line2="- Updated vulnerable packages to patched versions"
+    
+    case $pm in
+        "pnpm")
+            changes_line1="- Applied \`pnpm audit fix\` to resolve vulnerabilities"
+            ;;
+        "yarn")
+            changes_line1="- Added Yarn resolutions for transitive dependencies"
+            ;;
+        "npm")
+            changes_line1="- Applied \`npm audit fix\` to resolve vulnerabilities"
+            ;;
+    esac
+    
     local pr_url=$(gh pr create --title "$pr_title" \
                --body "Automated fixes for Dependabot security alerts.$package_list
+
 ## Changes
-- Applied \`audit fix\` to resolve vulnerabilities
-- Added Yarn resolutions for transitive dependencies
-- Updated vulnerable packages to patched versions
+$changes_line1
+$changes_line2
 
 ## Security
-Resolves $alerts_count open Dependabot security alerts." \
+Resolves $auto_fixable open Dependabot security $alert_word." \
                --base "$default_branch" 2>&1)
     
     if [[ $pr_url == https://* ]]; then

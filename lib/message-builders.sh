@@ -14,7 +14,8 @@ build_package_list() {
     local package_names=$1
     
     if [ -n "$package_names" ]; then
-        echo "\n## Updated packages\n$(echo \"$package_names\" | tr ',' '\n' | sed 's/^/- /' | sed 's/^ - /- /')\n"
+        printf "\n\n## Updated packages\n"
+        echo "$package_names" | tr ',' '\n' | sed 's/^/- /' | sed 's/^ - /- /'
     fi
 }
 

@@ -1,9 +1,10 @@
 #!/bin/bash
 
 handle_commit_workflow() {
-    local alerts_count=$1
+    local auto_fixable=$1
     local branch_name=$2
     local package_names=$3
+    local pm=$4
     
     repos_fixed=$((repos_fixed + 1))
     
@@ -41,7 +42,7 @@ execute_full_workflow() {
     if push_branch "$branch_name"; then
         print_success "Push realizado"
         
-        if create_pull_request "$alerts_count" "$package_names"; then
+        if create_pull_request "$auto_fixable" "$package_names" "$pm"; then
             print_success "Pull Request creado"
         else
             print_warning "No se pudo crear el PR (puede que ya exista)"

@@ -18,12 +18,13 @@ prepare_fix_workflow() {
 }
 
 finalize_fix_workflow() {
-    local alerts_count=$1
+    local auto_fixable=$1
     local branch_name=$2
     local package_names=$3
+    local pm=$4
     
     if has_uncommitted_changes; then
-        handle_commit_workflow "$alerts_count" "$branch_name" "$package_names"
+        handle_commit_workflow "$auto_fixable" "$branch_name" "$package_names" "$pm"
     else
         checkout_main_branch
         delete_branch "$branch_name"
