@@ -4,29 +4,21 @@ process_repositories() {
     if [ -n "$SPECIFIC_REPO" ]; then
         local target_dir="$WORKSPACE_DIR/$SPECIFIC_REPO"
         
-        if [ ! -d "$target_dir" ]; then
-            print_warning "No se encontró el repositorio: $SPECIFIC_REPO"
-            return
-        fi
-        
-        if [ ! -d "${target_dir}/.git" ]; then
-            print_warning "$SPECIFIC_REPO no es un repositorio git"
+        if [ ! -d "$target_dir" ] || [ ! -d "${target_dir}/.git" ]; then
+            print_warning "No se encontró el repositorio git: $SPECIFIC_REPO"
             return
         fi
         
         print_info "📂 Procesando repositorio específico: $SPECIFIC_REPO"
         echo ""
-        
         total_repos=1
         cd "$target_dir" || return
         process_single_repository
     else
         for dir in "$WORKSPACE_DIR"/*/; do
             [ -d "${dir}.git" ] || continue
-            
             total_repos=$((total_repos + 1))
             cd "$dir" || continue
-            
             process_single_repository
         done
     fi

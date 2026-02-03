@@ -39,3 +39,20 @@ print_error() {
 print_separator() {
     echo -e "${CYAN}═══════════════════════════════════════════${NC}"
 }
+
+pluralize() {
+    local count=$1
+    local singular=$2
+    local plural=${3:-${singular}s}
+    
+    if [ "$count" -eq 1 ]; then
+        echo "$singular"
+    else
+        echo "$plural"
+    fi
+}
+
+has_uncommitted_changes() {
+    git diff-index --quiet HEAD -- 2>/dev/null
+    [ $? -ne 0 ]
+}
