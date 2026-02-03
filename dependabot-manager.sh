@@ -19,6 +19,7 @@ source "$SCRIPT_DIR/lib/fix-mode.sh"
 source "$SCRIPT_DIR/lib/commit-workflow.sh"
 
 MODE="${1:-check}"
+SPECIFIC_REPO="${2:-}"
 
 if [ "$(basename "$(pwd)")" = "multi-repo-dependabot-scanner" ]; then
     WORKSPACE_DIR="$(dirname "$(pwd)")"
@@ -38,6 +39,9 @@ created_pr_urls=()
 main() {
     echo "🔍 Analizador de Alertas de Dependabot"
     echo "══════════════════════════════════════"
+    if [ -n "$SPECIFIC_REPO" ]; then
+        echo "📂 Repositorio: $SPECIFIC_REPO"
+    fi
     echo ""
     
     process_repositories
