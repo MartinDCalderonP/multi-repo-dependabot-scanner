@@ -84,8 +84,7 @@ Commands:
    - Syncs with remote (main/master/develop)
    - Creates descriptive branch
    - Applies targeted updates to vulnerable packages
-   - Prompts for confirmation
-   - Creates PR with package manager-specific descriptions
+   - Automatically creates commit, push, and PR
 6. **PR Collection**: Displays all created PR URLs at the end
 
 ### Monorepo Support
@@ -172,7 +171,7 @@ Automatic fix orchestration for single repos and monorepos.
 
 ### `commit-workflow.sh`
 
-Interactive Git workflow with user confirmation.
+Automatic Git workflow execution (commit, push, PR creation).
 
 ### `summaries.sh`
 

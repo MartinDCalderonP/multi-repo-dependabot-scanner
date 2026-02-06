@@ -17,22 +17,17 @@ handle_commit_workflow() {
     git diff package.json | head -50
     echo ""
     
-    if prompt_yes_no "¿Crear commit, push y PR?" create_all; then
-        execute_full_workflow "$alerts_count" "$branch_name" "$package_names"
-    else
-        checkout_main_branch
-        discard_changes
-        delete_branch "$branch_name"
-        print_warning "Cambios descartados"
-    fi
+    print_info "🚀 Creando commit, push y PR..."
+    execute_full_workflow "$auto_fixable" "$branch_name" "$package_names" "$pm"
 }
 
 execute_full_workflow() {
-    local alerts_count=$1
+    local auto_fixable=$1
     local branch_name=$2
     local package_names=$3
+    local pm=$4
     
-    if ! commit_fixes "$alerts_count" "$package_names"; then
+    if ! commit_fixes "$auto_fixable" "$package_names"; then
         checkout_main_branch
         return 1
     fi

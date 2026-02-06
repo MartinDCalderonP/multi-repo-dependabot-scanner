@@ -27,7 +27,7 @@ create_fix_branch() {
 }
 
 commit_fixes() {
-    local alerts_count=$1
+    local auto_fixable=$1
     local package_names=$2
     
     git add -A
