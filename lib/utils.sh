@@ -56,3 +56,26 @@ has_uncommitted_changes() {
     git diff-index --quiet HEAD -- 2>/dev/null
     [ $? -ne 0 ]
 }
+
+cleanup_pnpm_files() {
+    local context=${1:-""}
+    local removed_files=()
+
+    if [ -f "pnpm-lock.yaml" ]; then
+        rm -f "pnpm-lock.yaml"
+        removed_files+=("pnpm-lock.yaml")
+    fi
+
+    if [ -f "pnpm-workspace.yaml" ]; then
+        rm -f "pnpm-workspace.yaml"
+        removed_files+=("pnpm-workspace.yaml")
+    fi
+
+    if [ ${#removed_files[@]} -gt 0 ]; then
+        if [ -n "$context" ]; then
+            print_info "🧹 Eliminados ${context}: ${removed_files[*]}" >&2
+        else
+            print_info "🧹 Eliminados: ${removed_files[*]}" >&2
+        fi
+    fi
+}

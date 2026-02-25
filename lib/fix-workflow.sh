@@ -11,6 +11,7 @@ prepare_fix_workflow() {
     local default_branch=$(get_default_branch)
     print_info "📥 Sincronizando con remoto ($default_branch)..." >&2
     git pull --rebase origin "$default_branch" >&2 || print_warning "No se pudo hacer pull (puede no tener remoto configurado)" >&2
+    cleanup_pnpm_files "tras pull"
     
     local package_names=$(echo "$alerts_json" | jq -r 'map(select(.is_auto_fixable == true)) | .[].dependency.package.name' | sort -u | tr '\n' ', ' | sed 's/,$//')
     
