@@ -23,7 +23,8 @@ build_fix_title() {
     local package_names=$1
     
     if [ -n "$package_names" ]; then
-        echo "fix: update $package_names"
+        local formatted_package_names=$(echo "$package_names" | sed -E 's/,[[:space:]]*/, /g')
+        echo "fix: update $formatted_package_names"
     else
         echo "fix: update vulnerable dependencies"
     fi
