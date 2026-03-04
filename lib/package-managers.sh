@@ -56,6 +56,8 @@ fix_vulnerabilities() {
     
     case $pm in
         "pnpm")
+            print_info "   Ejecutando: pnpm install"
+            pnpm install 2>/dev/null
             print_info "   Ejecutando: pnpm audit --fix"
             pnpm audit --fix 2>/dev/null
             print_info "   Actualizando paquetes vulnerables: $packages"
