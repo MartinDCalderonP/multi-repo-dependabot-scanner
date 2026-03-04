@@ -41,7 +41,7 @@ build_package_list() {
 
 build_branch_name() {
     local package_names=$1
-    local branch_suffix=$(date +%Y%m%d)
+    local branch_suffix=$(date +%Y%m%d-%H%M%S)
     local branch_name="fix/dependabot-alerts-$branch_suffix"
     
     if [ -n "$package_names" ]; then
