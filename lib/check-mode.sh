@@ -15,25 +15,25 @@ display_check_mode() {
     echo ""
     
     if [ "$auto_fixable" -gt 0 ]; then
-        echo -e "   ${GREEN}Alertas auto-resolvibles:${NC}"
+        echo -e "   ${GREEN}$(t section_auto_fixable)${NC}"
         display_auto_fixable_alerts "$alerts_json"
         echo ""
     fi
     
     if [ "$breaking" -gt 0 ]; then
-        echo -e "   ${YELLOW}Requieren actualización manual (breaking change):${NC}"
+        echo -e "   ${YELLOW}$(t section_breaking)${NC}"
         display_breaking_alerts "$alerts_json"
         echo ""
     fi
 
     if [ "$blocked" -gt 0 ]; then
-        echo -e "   ${YELLOW}Dependabot no puede actualizar (constraints de dependencias):${NC}"
+        echo -e "   ${YELLOW}$(t section_blocked)${NC}"
         display_blocked_alerts "$alerts_json"
         echo ""
     fi
     
     if [ "$unfixable" -gt 0 ]; then
-        echo -e "   ${YELLOW}Alertas sin versión patched:${NC}"
+        echo -e "   ${YELLOW}$(t section_unfixable)${NC}"
         display_unfixable_alerts "$alerts_json"
     fi
 }

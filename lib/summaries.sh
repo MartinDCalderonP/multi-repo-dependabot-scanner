@@ -7,8 +7,8 @@ display_repo_header() {
     
     echo ""
     print_separator
-    echo -e "${BLUE}📦 Repositorio: $owner/$repo${NC}"
-    echo -e "${RED}🚨 $alerts_count alertas encontradas${NC}"
+    printf "${BLUE}$(t repo_header)${NC}\n" "$owner" "$repo"
+    printf "${RED}$(t alerts_found)${NC}\n" "$alerts_count"
     print_separator
 }
 
@@ -22,15 +22,15 @@ display_severity_summary() {
     local unfixable=$7
     local blocked=$8
 
-    [ "$critical" -gt 0 ] && echo -e "   ${RED}⛔ $critical críticas${NC}"
-    [ "$high" -gt 0 ] && echo -e "   ${RED}⚠️  $high altas${NC}"
-    [ "$medium" -gt 0 ] && echo -e "   ${YELLOW}⚠️  $medium medias${NC}"
-    [ "$low" -gt 0 ] && echo -e "   ${BLUE}ℹ️  $low bajas${NC}"
+    [ "$critical" -gt 0 ] && printf "   ${RED}$(t severity_critical)${NC}\n" "$critical"
+    [ "$high" -gt 0 ] && printf "   ${RED}$(t severity_high)${NC}\n" "$high"
+    [ "$medium" -gt 0 ] && printf "   ${YELLOW}$(t severity_medium)${NC}\n" "$medium"
+    [ "$low" -gt 0 ] && printf "   ${BLUE}$(t severity_low)${NC}\n" "$low"
     echo ""
-    [ "$auto_fixable" -gt 0 ] && echo -e "   ${GREEN}✓ $auto_fixable auto-resolvibles${NC}" || echo -e "   ${YELLOW}⚠ 0 auto-resolvibles${NC}"
-    [ "$breaking" -gt 0 ] && echo -e "   ${YELLOW}⚠ $breaking requieren actualización manual (breaking change)${NC}"
-    [ "$blocked" -gt 0 ] && echo -e "   ${YELLOW}⊘ $blocked bloqueadas por Dependabot (constraints)${NC}"
-    [ "$unfixable" -gt 0 ] && echo -e "   ${RED}✗ $unfixable sin versión patched${NC}"
+    [ "$auto_fixable" -gt 0 ] && printf "   ${GREEN}$(t count_auto_fixable)${NC}\n" "$auto_fixable" || echo -e "   ${YELLOW}$(t count_zero_auto_fixable)${NC}"
+    [ "$breaking" -gt 0 ] && printf "   ${YELLOW}$(t count_breaking)${NC}\n" "$breaking"
+    [ "$blocked" -gt 0 ] && printf "   ${YELLOW}$(t count_blocked)${NC}\n" "$blocked"
+    [ "$unfixable" -gt 0 ] && printf "   ${RED}$(t count_unfixable)${NC}\n" "$unfixable"
 }
 
 display_final_summary() {
@@ -46,24 +46,24 @@ display_final_summary() {
 
     echo ""
     echo "═══════════════════════════════════════════"
-    echo -e "${BLUE}📊 RESUMEN FINAL${NC}"
+    echo -e "${BLUE}$(t summary_title)${NC}"
     echo "═══════════════════════════════════════════"
-    echo "Total de repositorios: $total_repos"
-    echo "Repositorios con alertas: $repos_with_alerts"
-    echo "Total de alertas: $total_alerts"
+    printf "$(t summary_total_repos)\n" "$total_repos"
+    printf "$(t summary_repos_with_alerts)\n" "$repos_with_alerts"
+    printf "$(t summary_total_alerts)\n" "$total_alerts"
 
     if [ "$mode" = "check" ] || [ "$mode" = "both" ]; then
         if [ "$total_alerts" -gt 0 ]; then
             echo ""
-            echo -e "${GREEN}✓ Auto-resolvibles: $total_fixable${NC}"
-            echo -e "${YELLOW}⚠ Requieren actualización manual (breaking): $total_breaking${NC}"
-            echo -e "${YELLOW}⊘ Bloqueadas por Dependabot (constraints): $total_blocked${NC}"
-            echo -e "${RED}✗ Sin versión patched: $total_unfixable${NC}"
+            printf "${GREEN}$(t summary_auto_fixable)${NC}\n" "$total_fixable"
+            printf "${YELLOW}$(t summary_breaking)${NC}\n" "$total_breaking"
+            printf "${YELLOW}$(t summary_blocked)${NC}\n" "$total_blocked"
+            printf "${RED}$(t summary_unfixable)${NC}\n" "$total_unfixable"
         fi
     fi
 
     if [ "$mode" = "fix" ] || [ "$mode" = "both" ]; then
-        echo "Repositorios actualizados: $repos_fixed"
+        printf "$(t summary_repos_fixed)\n" "$repos_fixed"
     fi
 
     echo ""

@@ -15,7 +15,7 @@ prompt_yes_no() {
             eval "$var_name=false"
             return 1
         else
-            echo -e "${RED}Por favor responde 'y' (sí) o 'n' (no)${NC}"
+            echo -e "${RED}$(t invalid_yn)${NC}"
         fi
     done
 }
@@ -73,9 +73,9 @@ cleanup_pnpm_files() {
 
     if [ ${#removed_files[@]} -gt 0 ]; then
         if [ -n "$context" ]; then
-            print_info "🧹 Eliminados ${context}: ${removed_files[*]}" >&2
+            print_info "$(printf "$(t cleanup_with_ctx)" "$context" "${removed_files[*]}")" >&2
         else
-            print_info "🧹 Eliminados: ${removed_files[*]}" >&2
+            print_info "$(printf "$(t cleanup_no_ctx)" "${removed_files[*]}")" >&2
         fi
     fi
 }

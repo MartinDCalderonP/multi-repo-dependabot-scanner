@@ -33,7 +33,7 @@ commit_fixes() {
     git add -A
     
     if git diff --cached --quiet; then
-        print_warning "No hay cambios staged para commitear"
+        print_warning "$(t no_staged_changes)"
         return 1
     fi
     

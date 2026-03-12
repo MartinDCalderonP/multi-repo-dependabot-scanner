@@ -9,7 +9,7 @@ handle_commit_workflow() {
     repos_fixed=$((repos_fixed + 1))
     
     echo ""
-    print_success "✨ Se realizaron actualizaciones"
+    print_success "$(t updates_applied)"
     echo ""
     
     git status
@@ -17,7 +17,7 @@ handle_commit_workflow() {
     git diff package.json | head -50
     echo ""
     
-    print_info "🚀 Creando commit, push y PR..."
+    print_info "$(t creating_pr)"
     execute_full_workflow "$auto_fixable" "$branch_name" "$package_names" "$pm"
 }
 
@@ -32,18 +32,18 @@ execute_full_workflow() {
         return 1
     fi
     
-    print_success "Commit creado en rama $branch_name"
+    print_success "$(printf "$(t commit_created)" "$branch_name")"
     
     if push_branch "$branch_name"; then
-        print_success "Push realizado"
-        
+        print_success "$(t push_done)"
+
         if create_pull_request "$auto_fixable" "$package_names" "$pm"; then
-            print_success "Pull Request creado"
+            print_success "$(t pr_created)"
         else
-            print_warning "No se pudo crear el PR (puede que ya exista)"
+            print_warning "$(t pr_exists)"
         fi
     else
-        print_warning "No se pudo hacer push"
+        print_warning "$(t push_failed)"
     fi
     
     checkout_main_branch

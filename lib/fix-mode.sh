@@ -6,7 +6,7 @@ run_fix_mode() {
     local auto_fixable=$3
     
     if [ "$auto_fixable" -eq 0 ]; then
-        print_warning "No hay alertas auto-resolvibles. Saltando..."
+        print_warning "$(t skip_no_auto_fixable)"
         return
     fi
     
@@ -16,11 +16,11 @@ run_fix_mode() {
         local subdirs=$(find_monorepo_subdirs)
         
         if [ -n "$subdirs" ]; then
-            print_info "📦 Detectado monorepo con subdirectorios"
+            print_info "$(t monorepo_detected)"
             run_fix_mode_monorepo "$alerts_json" "$auto_fixable" "$subdirs"
             return
         else
-            print_warning "No se detectó gestor de paquetes"
+            print_warning "$(t no_pm_detected)"
             return
         fi
     fi
@@ -39,25 +39,25 @@ run_fix_mode_monorepo() {
     local branch_name=$(create_fix_branch "$package_names")
     
     echo ""
-    print_info "🔧 Intentando reparar vulnerabilidades en todos los subdirectorios..."
+    print_info "$(t fixing_subdirs)"
     echo ""
     
     local last_pm="unknown"
     while IFS= read -r subdir; do
         echo ""
-        print_info "📂 Procesando $subdir..."
+        print_info "$(printf "$(t processing_subdir)" "$subdir")"
         cd "$subdir" || continue
         
         local pm=$(detect_package_manager)
         if [ "$pm" != "unknown" ]; then
-            printf "Gestor de paquetes: ${GREEN}%s${NC}\n" "$pm"
+printf "$(t pm_label): ${GREEN}%s${NC}\n" "$pm"
             apply_fixes "$pm" "$alerts_json"
             last_pm="$pm"
         fi
-        
+
         cd - > /dev/null
     done < <(echo "$subdirs")
-    
+
     finalize_fix_workflow "$auto_fixable" "$branch_name" "$package_names" "$last_pm"
 }
 
@@ -65,8 +65,8 @@ run_fix_mode_single() {
     local alerts_json=$1
     local auto_fixable=$2
     local pm=$3
-    
-    printf "Gestor de paquetes: ${GREEN}%s${NC}\n" "$pm"
+
+    printf "$(t pm_label): ${GREEN}%s${NC}\n" "$pm"
     
     local package_names=$(prepare_fix_workflow "$alerts_json")
     [ $? -ne 0 ] && return
@@ -74,7 +74,7 @@ run_fix_mode_single() {
     local branch_name=$(create_fix_branch "$package_names")
     
     echo ""
-    print_info "🔧 Intentando reparar vulnerabilidades auto-resolvibles..."
+    print_info "$(t fixing_auto)"
     echo ""
     
     apply_fixes "$pm" "$alerts_json"

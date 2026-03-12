@@ -56,17 +56,17 @@ fix_vulnerabilities() {
     
     case $pm in
         "pnpm")
-            print_info "   Ejecutando: pnpm install"
+            print_info "$(t running_pnpm_install)"
             pnpm install 2>/dev/null
-            print_info "   Ejecutando: pnpm audit --fix"
+            print_info "$(t running_pnpm_audit)"
             pnpm audit --fix 2>/dev/null
-            print_info "   Actualizando paquetes vulnerables: $packages"
+            print_info "$(printf "$(t updating_packages)" "$packages")"
             pnpm update $packages 2>/dev/null
-            print_info "   Ejecutando: pnpm install"
+            print_info "$(t running_pnpm_install)"
             pnpm install 2>/dev/null
             ;;
         "yarn")
-            print_info "   Aplicando resolutions para dependencias transitivas..."
+            print_info "$(t applying_resolutions)"
             local success=false
             while IFS= read -r alert; do
                 local pkg=$(echo "$alert" | jq -r '.dependency.package.name')
@@ -77,16 +77,16 @@ fix_vulnerabilities() {
             done < <(echo "$alerts_json" | jq -c 'map(select(.is_auto_fixable == true)) | .[]')
             
             if [ "$success" = true ]; then
-                print_info "   Ejecutando: yarn install"
+                print_info "$(t running_yarn_install)"
                 yarn install 2>/dev/null
             fi
             ;;
         "npm")
-            print_info "   Ejecutando: npm audit fix --force"
+            print_info "$(t running_npm_audit)"
             npm audit fix --force 2>/dev/null
-            print_info "   Actualizando paquetes vulnerables: $packages"
+            print_info "$(printf "$(t updating_packages)" "$packages")"
             npm update $packages 2>/dev/null
-            print_info "   Ejecutando: npm install"
+            print_info "$(t running_npm_install)"
             npm install 2>/dev/null
             ;;
         *)

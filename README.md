@@ -41,6 +41,16 @@ multi-repo-dependabot-scanner/
 └── README.md
 ```
 
+## 🌐 Language
+
+The tool defaults to **English**. Set `SCRIPT_LANG=es` to switch to Spanish:
+
+```bash
+SCRIPT_LANG=es ./dependabot-manager.sh check
+```
+
+Locale files are in `locales/en.json` and `locales/es.json`.
+
 ## 🚀 Usage
 
 The script automatically detects its location and analyzes repositories:

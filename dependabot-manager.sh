@@ -3,6 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 source "$SCRIPT_DIR/lib/colors.sh"
+source "$SCRIPT_DIR/lib/i18n.sh"
 source "$SCRIPT_DIR/lib/utils.sh"
 source "$SCRIPT_DIR/lib/package-managers.sh"
 source "$SCRIPT_DIR/lib/yarn-fixes.sh"
@@ -40,10 +41,10 @@ repos_fixed=0
 created_pr_urls=()
 
 main() {
-    echo "🔍 Analizador de Alertas de Dependabot"
+    echo "$(t app_title)"
     echo "══════════════════════════════════════"
     if [ -n "$SPECIFIC_REPO" ]; then
-        echo "📂 Repositorio: $SPECIFIC_REPO"
+        printf "$(t header_repo)\n" "$SPECIFIC_REPO"
     fi
     echo ""
     
@@ -55,7 +56,7 @@ main() {
     
     if [ ${#created_pr_urls[@]} -gt 0 ]; then
         echo ""
-        echo -e "${CYAN}🔗 Pull Requests creados:${NC}"
+        echo -e "${CYAN}$(t pr_list_title)${NC}"
         echo "══════════════════════════════════════"
         for pr_url in "${created_pr_urls[@]}"; do
             echo "   $pr_url"

@@ -5,11 +5,11 @@ process_repositories() {
         local target_dir="$WORKSPACE_DIR/$SPECIFIC_REPO"
         
         if [ ! -d "$target_dir" ] || [ ! -d "${target_dir}/.git" ]; then
-            print_warning "No se encontró el repositorio git: $SPECIFIC_REPO"
+            print_warning "$(printf "$(t repo_not_found)" "$SPECIFIC_REPO")"
             return
         fi
         
-        print_info "📂 Procesando repositorio específico: $SPECIFIC_REPO"
+        print_info "$(printf "$(t processing_specific_repo)" "$SPECIFIC_REPO")"
         echo ""
         total_repos=1
         cd "$target_dir" || return
@@ -40,7 +40,7 @@ process_single_repository() {
         
         if [ "$alerts_count" -eq 0 ]; then
             [ "$MODE" = "check" ] || [ "$MODE" = "both" ] && \
-                echo -e "${BLUE}📦 $owner/$repo${NC} - ${GREEN}✅ Sin alertas${NC}"
+                echo -e "${BLUE}📦 $owner/$repo${NC} - ${GREEN}$(t no_alerts)${NC}"
             return
         fi
         

@@ -8,9 +8,9 @@ apply_fixes() {
     apply_yarn_resolutions "$pm" "$alerts_json"
     
     if has_uncommitted_changes; then
-        print_success "Se aplicaron correcciones automáticas"
+        print_success "$(t fixes_applied)"
     else
-        print_warning "No se pudieron aplicar correcciones automáticas (pueden ser dependencias indirectas sin override)"
+        print_warning "$(t fixes_failed_indirect)"
     fi
 }
 
@@ -21,7 +21,7 @@ apply_yarn_resolutions() {
     [ "$pm" != "yarn" ] && return
     
     echo ""
-    print_info "🔍 Verificando alertas restantes..."
+    print_info "$(t checking_remaining)"
     
     echo "$alerts_json" | jq -c '.[]' | while read -r alert; do
         local package_name=$(echo "$alert" | jq -r '.dependency.package.name')
@@ -29,14 +29,14 @@ apply_yarn_resolutions() {
         local patched_major=$(echo "$patched_version" | cut -d'.' -f1)
         
         if [ -n "$patched_version" ] && [ "$patched_major" -lt 2 ] 2>/dev/null; then
-            echo -e "   ${CYAN}Agregando resolution para $package_name...${NC}"
+            printf "   ${CYAN}$(t adding_resolution)${NC}\n" "$package_name"
             add_yarn_resolutions "$package_name" "$patched_version"
         fi
     done
     
     if has_uncommitted_changes; then
         echo ""
-        print_info "Reinstalando con resolutions..."
+        print_info "$(t reinstalling)"
         yarn install 2>/dev/null
     fi
 }

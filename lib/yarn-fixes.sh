@@ -9,7 +9,7 @@ add_yarn_resolutions() {
            '.resolutions = (.resolutions // {}) | .resolutions[$pkg] = $ver' \
            package.json > package.json.tmp && mv package.json.tmp package.json
         
-        print_success "   Resolution agregada para $package_name@$patched_version"
+        print_success "$(printf "$(t resolution_added)" "$package_name" "$patched_version")"
         return 0
     fi
     return 1

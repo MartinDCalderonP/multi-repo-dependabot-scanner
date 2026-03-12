@@ -4,14 +4,14 @@ prepare_fix_workflow() {
     local alerts_json=$1
     
     if has_uncommitted_changes; then
-        print_warning "Hay cambios sin commitear. Saltando..." >&2
+        print_warning "$(t uncommitted_skip)" >&2
         return 1
     fi
     
     local default_branch=$(get_default_branch)
-    print_info "📥 Sincronizando con remoto ($default_branch)..." >&2
-    git pull --rebase origin "$default_branch" >&2 || print_warning "No se pudo hacer pull (puede no tener remoto configurado)" >&2
-    cleanup_pnpm_files "tras pull"
+    print_info "$(printf "$(t syncing_remote)" "$default_branch")" >&2
+    git pull --rebase origin "$default_branch" >&2 || print_warning "$(t pull_failed)" >&2
+    cleanup_pnpm_files "$(t after_pull)"
     
     local package_names=$(echo "$alerts_json" | jq -r 'map(select(.is_auto_fixable == true)) | .[].dependency.package.name' | sort -u | tr '\n' ', ' | sed 's/,$//')
     
@@ -29,6 +29,6 @@ finalize_fix_workflow() {
     else
         checkout_main_branch
         delete_branch "$branch_name"
-        print_warning "No se pudieron aplicar correcciones automáticas"
+        print_warning "$(t fixes_failed)"
     fi
 }
