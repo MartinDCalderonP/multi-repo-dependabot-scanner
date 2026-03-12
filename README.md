@@ -4,7 +4,8 @@ Modular tool to scan and manage Dependabot alerts across multiple GitHub reposit
 
 ## ✨ Key Features
 
-- **🎯 Accurate Breaking Change Detection**: Detects real installed versions instead of assuming from version ranges
+- **🎯 Accurate Breaking Change Detection**: Detects real installed versions instead of assuming from version ranges. For `0.x` packages, minor bumps are treated as breaking (e.g. `0.4 → 0.6`)
+- **⊘ Blocked Alert Detection**: Uses GitHub GraphQL API to detect alerts Dependabot cannot fix due to dependency constraints or timeouts (`security_update_not_possible`, `dependabot_timed_out`)
 - **🔧 Surgical Updates**: Only updates vulnerable packages, not all dependencies
 - **📦 Monorepo Support**: Automatically detects and processes monorepo subdirectories
 - **🧶 Yarn Berry Support**: Parses yarn.lock directly for transitive dependency versions (Yarn v2+)
@@ -145,6 +146,10 @@ Fix orchestration:
 
 Alert enrichment with real versions and classification (auto-fixable/breaking/unfixable).
 
+### `dependabot-status.sh`
+
+GraphQL-based enrichment to detect alerts blocked by Dependabot errors (`security_update_not_possible`, `dependabot_timed_out`).
+
 ### `formatters.sh`
 
 Alert formatting and colored severity badges.
@@ -204,6 +209,12 @@ Repository processing for all or single specified repos with alert fetching and 
 
    Requieren actualización manual (breaking change):
    ⚠ [HIGH] eslint Stack Overflow - eslint → v9.26.0
+
+   Dependabot no puede actualizar (constraints de dependencias):
+      Sin versión compatible posible:
+   ⊘ [HIGH] node-tar Symlink Path Traversal - tar → v7.5.11
+      Timeout de Dependabot:
+   ⊘ [HIGH] urllib3 vulnerability - urllib3 → v2.6.0
 ```
 
 ## 🔧 Requirements

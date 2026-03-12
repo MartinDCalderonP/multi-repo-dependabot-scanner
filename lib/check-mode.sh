@@ -5,11 +5,12 @@ display_check_mode() {
     local auto_fixable=$2
     local breaking=$3
     local unfixable=$4
+    local blocked=$5
     
     read critical high medium low <<< $(get_severity_counts "$alerts_json")
     
     display_severity_summary "$critical" "$high" "$medium" "$low" \
-                            "$auto_fixable" "$breaking" "$unfixable"
+                            "$auto_fixable" "$breaking" "$unfixable" "$blocked"
     
     echo ""
     
@@ -22,6 +23,12 @@ display_check_mode() {
     if [ "$breaking" -gt 0 ]; then
         echo -e "   ${YELLOW}Requieren actualización manual (breaking change):${NC}"
         display_breaking_alerts "$alerts_json"
+        echo ""
+    fi
+
+    if [ "$blocked" -gt 0 ]; then
+        echo -e "   ${YELLOW}Dependabot no puede actualizar (constraints de dependencias):${NC}"
+        display_blocked_alerts "$alerts_json"
         echo ""
     fi
     

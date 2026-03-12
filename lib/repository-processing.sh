@@ -73,17 +73,20 @@ process_alerts() {
     else
         alerts_json=$(enrich_alerts_with_versions "$alerts_json" "$pm")
     fi
-    
-    read auto_fixable breaking unfixable <<< $(calculate_alert_metrics "$alerts_json" "$alerts_count")
+
+    alerts_json=$(enrich_alerts_with_dependabot_status "$alerts_json" "$owner" "$repo")
+
+    read auto_fixable breaking unfixable blocked <<< $(calculate_alert_metrics "$alerts_json" "$alerts_count")
     
     total_fixable=$((total_fixable + auto_fixable))
     total_breaking=$((total_breaking + breaking))
     total_unfixable=$((total_unfixable + unfixable))
+    total_blocked=$((total_blocked + blocked))
     
     display_repo_header "$owner" "$repo" "$alerts_count"
     
     if [ "$MODE" = "check" ]; then
-        display_check_mode "$alerts_json" "$auto_fixable" "$breaking" "$unfixable"
+        display_check_mode "$alerts_json" "$auto_fixable" "$breaking" "$unfixable" "$blocked"
     fi
     
     if [ "$MODE" = "fix" ] || [ "$MODE" = "both" ]; then
