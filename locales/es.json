@@ -29,7 +29,7 @@
   "section_blocked_not_possible": "Sin versión compatible posible:",
   "section_blocked_timed_out": "Timeout de Dependabot:",
   "section_unfixable": "Alertas sin versión patched:",
-  "version_unavailable": "No disponible",
+  "version_unavailable": "Versión no disponible",
   "invalid_yn": "Por favor responde 'y' (sí) o 'n' (no)",
   "skip_no_auto_fixable": "No hay alertas auto-resolvibles. Saltando...",
   "monorepo_detected": "📦 Detectado monorepo con subdirectorios",

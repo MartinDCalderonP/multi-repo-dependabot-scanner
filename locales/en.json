@@ -29,7 +29,7 @@
   "section_blocked_not_possible": "No compatible version available:",
   "section_blocked_timed_out": "Dependabot timeout:",
   "section_unfixable": "Alerts without patched version:",
-  "version_unavailable": "Not available",
+  "version_unavailable": "Version not available",
   "invalid_yn": "Please respond 'y' (yes) or 'n' (no)",
   "skip_no_auto_fixable": "No auto-fixable alerts. Skipping...",
   "monorepo_detected": "📦 Monorepo detected with subdirectories",

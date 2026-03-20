@@ -20,7 +20,13 @@ display_alert() {
     local version=$5
     
     local text="$summary - $package"
-    [ -n "$version" ] && text="$text → v$version"
+    if [ -n "$version" ]; then
+        if [[ "$version" =~ ^[0-9]+(\.[0-9]+){0,2}([-.][A-Za-z0-9]+)*$ ]]; then
+            text="$text → v$version"
+        else
+            text="$text → $version"
+        fi
+    fi
     
     case "$severity" in
         "critical") echo -e "   $icon ${BOLD_RED}[CRITICAL]${NC} $text" ;;
