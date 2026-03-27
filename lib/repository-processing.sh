@@ -33,8 +33,7 @@ process_single_repository() {
         local owner="${BASH_REMATCH[1]}"
         local repo="${BASH_REMATCH[2]%.git}"
         
-        local alerts_json=$(gh api "/repos/$owner/$repo/dependabot/alerts?state=open" 2>/dev/null)
-        [ $? -ne 0 ] && return
+        local alerts_json=$(fetch_open_alerts "$owner" "$repo")
         
         local alerts_count=$(echo "$alerts_json" | jq 'length' 2>/dev/null)
         
