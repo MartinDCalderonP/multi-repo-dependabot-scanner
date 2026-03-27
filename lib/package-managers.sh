@@ -48,7 +48,7 @@ fix_vulnerabilities() {
     local pm=$1
     local alerts_json=$2
     
-    local packages=$(echo "$alerts_json" | jq -r 'map(select(.is_auto_fixable == true)) | .[].dependency.package.name' | tr '\n' ' ')
+    local packages=$(echo "$alerts_json" | jq -r 'map(select(.is_auto_fixable == true or (.is_blocked == true and .blocked_reason != "dependabot_timed_out" and .security_vulnerability.first_patched_version.identifier != null))) | .[].dependency.package.name' | tr '\n' ' ')
     
     if [ -z "$packages" ]; then
         return 0
@@ -74,7 +74,7 @@ fix_vulnerabilities() {
                 if add_yarn_resolutions "$pkg" "$version"; then
                     success=true
                 fi
-            done < <(echo "$alerts_json" | jq -c 'map(select(.is_auto_fixable == true)) | .[]')
+            done < <(echo "$alerts_json" | jq -c 'map(select(.is_auto_fixable == true or (.is_blocked == true and .blocked_reason != "dependabot_timed_out" and .security_vulnerability.first_patched_version.identifier != null))) | .[]')
             
             if [ "$success" = true ]; then
                 print_info "$(t running_yarn_install)"

@@ -4,9 +4,19 @@ run_fix_mode() {
     local alerts_json=$1
     local alerts_count=$2
     local auto_fixable=$3
+    local fix_candidates
+
+    fix_candidates=$(echo "$alerts_json" | jq '[.[] | select(.is_auto_fixable == true or (.is_blocked == true and .blocked_reason != "dependabot_timed_out" and .security_vulnerability.first_patched_version.identifier != null))] | length' 2>/dev/null)
     
-    if [ "$auto_fixable" -eq 0 ]; then
-        print_warning "$(t skip_no_auto_fixable)"
+    if [ "$fix_candidates" -eq 0 ]; then
+        read manual_review timed_out blocked_without_patch <<< $(get_fix_reason_counts "$alerts_json")
+
+        print_warning "$(t skip_no_fix_candidates)"
+
+        [ "$manual_review" -gt 0 ] && print_warning "$(printf "$(t skip_manual_review_needed)" "$manual_review")"
+        [ "$timed_out" -gt 0 ] && print_info "$(printf "$(t skip_timed_out_retry)" "$timed_out")"
+        [ "$blocked_without_patch" -gt 0 ] && print_warning "$(printf "$(t skip_blocked_without_patch)" "$blocked_without_patch")"
+
         return
     fi
     
@@ -25,7 +35,7 @@ run_fix_mode() {
         fi
     fi
     
-    run_fix_mode_single "$alerts_json" "$auto_fixable" "$pm"
+    run_fix_mode_single "$alerts_json" "$fix_candidates" "$pm"
 }
 
 run_fix_mode_monorepo() {

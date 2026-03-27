@@ -68,12 +68,22 @@ calculate_alert_metrics() {
     local alerts_json=$1
     local alerts_count=$2
 
-    local unfixable=$(echo "$alerts_json" | jq '[.[] | select(.security_vulnerability.first_patched_version.identifier == null)] | length' 2>/dev/null)
-    local breaking=$(echo "$alerts_json" | jq '[.[] | select(.is_breaking == true)] | length' 2>/dev/null)
-    local auto_fixable=$(echo "$alerts_json" | jq '[.[] | select(.is_auto_fixable == true)] | length' 2>/dev/null)
-    local blocked=$(echo "$alerts_json" | jq '[.[] | select(.is_blocked == true)] | length' 2>/dev/null)
+    local unfixable=$(echo "$alerts_json" | jq '[.[] | select(.security_vulnerability.first_patched_version.identifier == null and .is_blocked != true)] | length' 2>/dev/null)
+    local breaking=$(echo "$alerts_json" | jq '[.[] | select((.is_breaking == true and .is_blocked != true) or (.is_blocked == true and .blocked_reason != "dependabot_timed_out" and .security_vulnerability.first_patched_version.identifier != null))] | length' 2>/dev/null)
+    local auto_fixable=$(echo "$alerts_json" | jq '[.[] | select(.is_auto_fixable == true and .is_blocked != true)] | length' 2>/dev/null)
+    local blocked=$(echo "$alerts_json" | jq '[.[] | select(.is_blocked == true and .blocked_reason != "dependabot_timed_out" and .security_vulnerability.first_patched_version.identifier == null)] | length' 2>/dev/null)
 
     echo "$auto_fixable $breaking $unfixable $blocked"
+}
+
+get_fix_reason_counts() {
+    local alerts_json=$1
+
+    local manual_review=$(echo "$alerts_json" | jq '[.[] | select(.is_blocked == true and .blocked_reason != "dependabot_timed_out" and .security_vulnerability.first_patched_version.identifier != null)] | length' 2>/dev/null)
+    local timed_out=$(echo "$alerts_json" | jq '[.[] | select(.is_blocked == true and .blocked_reason == "dependabot_timed_out")] | length' 2>/dev/null)
+    local blocked_without_patch=$(echo "$alerts_json" | jq '[.[] | select(.is_blocked == true and .blocked_reason != "dependabot_timed_out" and .security_vulnerability.first_patched_version.identifier == null)] | length' 2>/dev/null)
+
+    echo "$manual_review $timed_out $blocked_without_patch"
 }
 
 get_severity_counts() {
