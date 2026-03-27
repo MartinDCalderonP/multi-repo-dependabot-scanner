@@ -6,7 +6,7 @@ run_fix_mode() {
     local auto_fixable=$3
     local fix_candidates
 
-    fix_candidates=$(echo "$alerts_json" | jq '[.[] | select(.is_auto_fixable == true or (.is_blocked == true and .blocked_reason != "dependabot_timed_out" and .security_vulnerability.first_patched_version.identifier != null))] | length' 2>/dev/null)
+    fix_candidates=$(echo "$alerts_json" | jq '[.[] | select(.security_vulnerability.first_patched_version.identifier != null and (.is_blocked != true or .blocked_reason != "dependabot_timed_out"))] | length' 2>/dev/null)
     
     if [ "$fix_candidates" -eq 0 ]; then
         read manual_review timed_out blocked_without_patch <<< $(get_fix_reason_counts "$alerts_json")
