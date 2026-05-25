@@ -13,7 +13,7 @@ get_pm_display_name() {
 get_pm_fix_description() {
     local pm=$1
     case $pm in
-        "pnpm") echo "Applied \`pnpm audit fix\` to resolve vulnerabilities" ;;
+        "pnpm") echo "Applied \`pnpm audit --fix update\` to resolve vulnerabilities" ;;
         "yarn") echo "Added Yarn resolutions for transitive dependencies" ;;
         "npm") echo "Applied \`npm audit fix\` to resolve vulnerabilities" ;;
     esac
