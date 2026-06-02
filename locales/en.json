@@ -62,7 +62,7 @@
   "adding_resolution": "Adding resolution for %s...",
   "reinstalling": "Reinstalling with resolutions...",
   "running_pnpm_install": "   Running: pnpm install",
-  "running_pnpm_audit": "   Running: pnpm audit --fix update",
+  "running_pnpm_audit": "   Running: pnpm audit --fix override",
   "updating_packages": "   Updating vulnerable packages: %s",
   "applying_resolutions": "   Applying resolutions for transitive dependencies...",
   "running_yarn_install": "   Running: yarn install",

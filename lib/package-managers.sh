@@ -59,7 +59,7 @@ fix_vulnerabilities() {
             print_info "$(t running_pnpm_install)"
             pnpm install 2>/dev/null
             print_info "$(t running_pnpm_audit)"
-            pnpm audit --fix update 2>/dev/null
+            pnpm audit --fix override 2>/dev/null
             print_info "$(printf "$(t updating_packages)" "$packages")"
             pnpm update $packages 2>/dev/null
             print_info "$(t running_pnpm_install)"
