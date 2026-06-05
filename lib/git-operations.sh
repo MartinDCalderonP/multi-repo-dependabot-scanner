@@ -58,7 +58,7 @@ create_pull_request() {
     local default_branch=$(get_default_branch)
     
     local pr_title=$(build_fix_title "$package_names")
-    local package_list=$(build_package_list "$package_names")
+    local package_list=$(build_package_list "$PACKAGE_VERSION_DETAILS")
     
     local alert_word=$(pluralize "$auto_fixable" "alert")
     

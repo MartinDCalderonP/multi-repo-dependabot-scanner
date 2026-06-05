@@ -31,11 +31,16 @@ build_fix_title() {
 }
 
 build_package_list() {
-    local package_names=$1
+    local package_details=$1
     
-    if [ -n "$package_names" ]; then
+    if [ -n "$package_details" ]; then
         printf "\n\n## Updated packages\n"
-        echo "$package_names" | tr ',' '\n' | sed 's/^/- /' | sed 's/^ - /- /'
+        while IFS=$'\t' read -r package_name installed_version patched_version; do
+            [ -z "$package_name" ] && continue
+            [ -z "$installed_version" ] && installed_version="unknown"
+            [ -z "$patched_version" ] && patched_version="unknown"
+            printf -- '- %s: %s -> %s\n' "$package_name" "$installed_version" "$patched_version"
+        done <<< "$package_details"
     fi
 }
 

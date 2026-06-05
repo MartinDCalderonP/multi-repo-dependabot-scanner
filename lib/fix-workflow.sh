@@ -13,7 +13,13 @@ prepare_fix_workflow() {
     git pull --rebase origin "$default_branch" >&2 || print_warning "$(t pull_failed)" >&2
     cleanup_pnpm_files "$(t after_pull)"
     
-    local package_names=$(echo "$alerts_json" | jq -r 'map(select(.security_vulnerability.first_patched_version.identifier != null and (.is_blocked != true or .blocked_reason != "dependabot_timed_out"))) | .[].dependency.package.name' | sort -u | tr '\n' ', ' | sed 's/,$//')
+    PACKAGE_VERSION_DETAILS=$(echo "$alerts_json" | jq -r 'map(select(.security_vulnerability.first_patched_version.identifier != null and (.is_blocked != true or .blocked_reason != "dependabot_timed_out"))) | sort_by(.dependency.package.name) | unique_by(.dependency.package.name) | .[] | [
+        .dependency.package.name,
+        (.installed_version // "unknown"),
+        (.security_vulnerability.first_patched_version.identifier // "unknown")
+    ] | @tsv')
+
+    local package_names=$(echo "$PACKAGE_VERSION_DETAILS" | awk -F'\t' '{print $1}' | tr '\n' ', ' | sed 's/,$//')
     
     echo "$package_names"
 }
