@@ -2,6 +2,8 @@
 
 prepare_fix_workflow() {
     local alerts_json=$1
+    PACKAGE_VERSION_DETAILS=""
+    FIX_PACKAGE_NAMES=""
     
     if has_uncommitted_changes; then
         print_warning "$(t uncommitted_skip)" >&2
@@ -19,9 +21,7 @@ prepare_fix_workflow() {
         (.security_vulnerability.first_patched_version.identifier // "unknown")
     ] | @tsv')
 
-    local package_names=$(echo "$PACKAGE_VERSION_DETAILS" | awk -F'\t' '{print $1}' | tr '\n' ', ' | sed 's/,$//')
-    
-    echo "$package_names"
+    FIX_PACKAGE_NAMES=$(echo "$PACKAGE_VERSION_DETAILS" | awk -F'\t' '{print $1}' | tr '\n' ', ' | sed 's/,$//')
 }
 
 finalize_fix_workflow() {

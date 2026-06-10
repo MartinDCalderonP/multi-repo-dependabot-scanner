@@ -43,8 +43,8 @@ run_fix_mode_monorepo() {
     local auto_fixable=$2
     local subdirs=$3
     
-    local package_names=$(prepare_fix_workflow "$alerts_json")
-    [ $? -ne 0 ] && return
+    prepare_fix_workflow "$alerts_json" || return
+    local package_names=$FIX_PACKAGE_NAMES
     
     local branch_name=$(create_fix_branch "$package_names")
     
@@ -78,8 +78,8 @@ run_fix_mode_single() {
 
     printf "$(t pm_label): ${GREEN}%s${NC}\n" "$pm"
     
-    local package_names=$(prepare_fix_workflow "$alerts_json")
-    [ $? -ne 0 ] && return
+    prepare_fix_workflow "$alerts_json" || return
+    local package_names=$FIX_PACKAGE_NAMES
     
     local branch_name=$(create_fix_branch "$package_names")
     
