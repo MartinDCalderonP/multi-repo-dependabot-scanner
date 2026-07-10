@@ -32,16 +32,29 @@ build_fix_title() {
 
 build_package_list() {
     local package_details=$1
+    local include_heading=${2:-true}
     
     if [ -n "$package_details" ]; then
-        printf "\n\n## Updated packages\n"
+        [ "$include_heading" = true ] && printf "\n\n## Updated packages\n"
         while IFS=$'\t' read -r package_name installed_version patched_version; do
             [ -z "$package_name" ] && continue
             [ -z "$installed_version" ] && installed_version="unknown"
             [ -z "$patched_version" ] && patched_version="unknown"
+            if version_is_greater "$installed_version" "$patched_version"; then
+                local previous_version=$patched_version
+                patched_version=$installed_version
+                installed_version=$previous_version
+            fi
             printf -- '- %s: %s -> %s\n' "$package_name" "$installed_version" "$patched_version"
         done <<< "$package_details"
     fi
+}
+
+merge_package_details() {
+    local primary_details=$1
+    local secondary_details=$2
+
+    printf '%s\n%s\n' "$primary_details" "$secondary_details" | awk -F'\t' 'NF == 3 && !seen[$1]++ { print }'
 }
 
 build_branch_name() {

@@ -3,6 +3,7 @@
 prepare_fix_workflow() {
     local alerts_json=$1
     PACKAGE_VERSION_DETAILS=""
+    PACKAGE_UPDATE_DETAILS=""
     FIX_PACKAGE_NAMES=""
     
     if has_uncommitted_changes; then

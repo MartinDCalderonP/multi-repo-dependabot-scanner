@@ -23,7 +23,7 @@ get_installed_version() {
     local version=""
     case $pm in
         "pnpm")
-            version=$(pnpm why "$package_name" 2>&1 | grep -oE "$package_name [0-9]+\.[0-9]+\.[0-9]+" | head -1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+            version=$(get_pnpm_installed_version "$package_name")
             ;;
         "yarn")
             if [ -f "yarn.lock" ]; then
@@ -56,14 +56,7 @@ fix_vulnerabilities() {
     
     case $pm in
         "pnpm")
-            print_info "$(t running_pnpm_install)"
-            pnpm install 2>/dev/null
-            print_info "$(t running_pnpm_audit)"
-            pnpm audit --fix override 2>/dev/null
-            print_info "$(printf "$(t updating_packages)" "$packages")"
-            pnpm update $packages 2>/dev/null
-            print_info "$(t running_pnpm_install)"
-            pnpm install 2>/dev/null
+            fix_pnpm_vulnerabilities "$alerts_json"
             ;;
         "yarn")
             print_info "$(t applying_resolutions)"

@@ -59,21 +59,11 @@ create_pull_request() {
     
     local pr_title=$(build_fix_title "$package_names")
     local package_list=$(build_package_list "$PACKAGE_VERSION_DETAILS")
-    
-    local alert_word=$(pluralize "$auto_fixable" "alert")
-    
-    local changes_line1=$(get_pm_fix_description "$pm")
-    local changes_line2="- Updated vulnerable packages to patched versions"
-    
+    local update_list=$(build_package_list "$PACKAGE_UPDATE_DETAILS" false)
+    local body=$(build_pull_request_body "$auto_fixable" "$package_list" "$pm" "$update_list")
+
     local pr_url=$(gh pr create --title "$pr_title" \
-               --body "Automated fixes for Dependabot security alerts.$package_list
-
-## Changes
-$changes_line1
-$changes_line2
-
-## Security
-Resolves $auto_fixable open Dependabot security $alert_word." \
+               --body "$body" \
                --base "$default_branch" 2>&1)
     
     if [[ $pr_url == https://* ]]; then
