@@ -23,11 +23,16 @@ multi-repo-dependabot-scanner/
 ├── dependabot-manager.sh          # Main orchestrator
 ├── lib/
 │   ├── colors.sh                 # Color definitions
+│   ├── i18n.sh                   # Internationalization
 │   ├── utils.sh                  # General utilities
+│   ├── version-utils.sh          # Semver comparison
 │   ├── package-managers.sh       # Package detection
+│   ├── pnpm-fixes.sh             # pnpm-specific operations
 │   ├── yarn-fixes.sh             # Yarn-specific operations
 │   ├── package-fixes.sh          # Fix operations
 │   ├── alerts.sh                 # Alert enrichment
+│   ├── alerts-fetch.sh           # Alert fetching via GraphQL
+│   ├── dependabot-status.sh      # Blocked alert detection
 │   ├── formatters.sh             # Alert formatting
 │   ├── alert-lists.sh            # Alert displays
 │   ├── message-builders.sh       # Commit/PR messages
@@ -37,7 +42,14 @@ multi-repo-dependabot-scanner/
 │   ├── check-mode.sh             # Check display
 │   ├── fix-workflow.sh           # Fix workflow helpers
 │   ├── fix-mode.sh               # Fix orchestration
+│   ├── pull-request-body.sh      # PR description builder
 │   └── commit-workflow.sh        # Interactive workflow
+├── tests/
+│   ├── *.test.sh                 # Unit tests (24 files)
+│   ├── assert-helpers.sh         # Shared assertion functions
+│   ├── coverage.sh               # Coverage runner
+│   ├── coverage-helpers.sh       # Coverage line counting
+│   └── *.helpers.sh              # Shared test utilities
 └── README.md
 ```
 
@@ -203,35 +215,72 @@ Repository processing for all or single specified repos with alert fetching and 
 ## 📊 Output Example
 
 ```
-📦 Repositorio: username/my-app
-🚨 4 alertas encontradas
+📦 Repository: username/my-app
+🚨 4 alerts found
 ═══════════════════════════════════════════
-   ⚠️  2 altas
-   ⚠️  2 medias
+   ⚠️  2 high
+   ⚠️  2 medium
 
-   ✓ 3 auto-resolvibles
-   ⚠ 1 requieren actualización manual (breaking change)
+   ✓ 3 auto-fixable
+   ⚠ 1 requires manual update (breaking change)
 
-   Alertas auto-resolvibles:
+   Auto-fixable alerts:
    ✓ [HIGH] Vulnerability in tar - tar → v7.5.7
    ✓ [MEDIUM] Issue in micromatch - micromatch → v4.0.8
    ✓ [MEDIUM] Issue in path-to-regexp - path-to-regexp → v0.1.12
 
-   Requieren actualización manual (breaking change):
+   Requires manual update (breaking change):
    ⚠ [HIGH] eslint Stack Overflow - eslint → v9.26.0
 
-   Dependabot no puede actualizar (constraints de dependencias):
-      Sin versión compatible posible:
+   Dependabot cannot update (dependency constraints):
+      No compatible version possible:
    ⊘ [HIGH] node-tar Symlink Path Traversal - tar → v7.5.11
-      Timeout de Dependabot:
+      Dependabot timed out:
    ⊘ [HIGH] urllib3 vulnerability - urllib3 → v2.6.0
 ```
 
 ## 🔧 Requirements
 
+- Bash 4+
 - GitHub CLI (`gh`) installed and authenticated
 - `jq` for JSON processing
 - npm/yarn/pnpm depending on your projects
+
+## 🧪 Testing
+
+Pure bash unit tests (no external frameworks). 24 test files, 82%+ line coverage.
+
+```bash
+# Run all tests
+for t in tests/*.test.sh; do bash "$t"; done
+
+# Run a specific test
+bash tests/utils.test.sh
+
+# Run coverage report
+bash tests/coverage.sh
+```
+
+### Test structure
+
+Each `tests/*.test.sh` follows the same pattern:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$SCRIPT_DIR/lib/module-under-test.sh"
+source "$SCRIPT_DIR/tests/assert-helpers.sh"
+
+# Stubs, setup, assertions...
+printf 'OK\n'
+```
+
+Shared helpers:
+
+- `tests/assert-helpers.sh` — `assert_equals`, `assert_contains`, `assert_not_contains`
+- `tests/git-operations.helpers.sh` — `build_git_mock` for git stubs
+- `tests/coverage-helpers.sh` — executable line counting for coverage
 
 ## 🔒 Security
 
