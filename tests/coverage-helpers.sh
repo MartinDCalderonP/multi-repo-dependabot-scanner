@@ -6,8 +6,17 @@ count_executable_lines() {
     local file_path=$1
 
     LC_ALL=C awk '
-        /^[[:space:]]*$/ { next }
-        /^[[:space:]]*#/ { next }
+        BEGIN { in_continuation = 0 }
+        /^[[:space:]]*$/ { in_continuation = 0; next }
+        /^[[:space:]]*#/ { in_continuation = 0; next }
+        /^[[:space:]]*(fi|done|esac|else|elif|;;|\}|[[:alnum:]_]+\(\)[[:space:]]*\{|function[[:space:]]+[[:alnum:]_]+[[:space:]]*\{)[[:space:]]*$/ { in_continuation = 0; next }
+        /^[[:space:]]*done[[:space:]]+<<</ { in_continuation = 0; next }
+        in_continuation == 1 {
+            if (/\\[[:space:]]*$/) { next }
+            in_continuation = 0
+            next
+        }
+        /\\[[:space:]]*$/ { count += 1; in_continuation = 1; next }
         { count += 1 }
         END { print count + 0 }
     ' "$file_path"
