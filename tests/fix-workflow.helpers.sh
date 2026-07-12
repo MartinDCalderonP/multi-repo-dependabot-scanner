@@ -52,14 +52,3 @@ gh() {
 
     return 0
 }
-
-assert_equals() {
-    local expected=$1
-    local actual=$2
-    local label=$3
-
-    if [ "$expected" != "$actual" ]; then
-        printf 'Assertion failed for %s\nExpected: %s\nActual:   %s\n' "$label" "$expected" "$actual" >&2
-        exit 1
-    fi
-}
