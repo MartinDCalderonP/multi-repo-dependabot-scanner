@@ -3,10 +3,11 @@
 prompt_yes_no() {
     local question=$1
     local var_name=$2
-    
+    local input_fd=${3:-/dev/tty}
+
     while true; do
         echo -en "${YELLOW}$question (y/n) ${NC}"
-        read -r response < /dev/tty
+        read -r response <&"${input_fd}"
         
         if [[ "$response" =~ ^[Yy]$ ]]; then
             eval "$var_name=true"
