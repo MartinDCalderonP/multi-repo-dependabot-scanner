@@ -10,18 +10,8 @@ display_alert() {
 
 source "$SCRIPT_DIR/lib/colors.sh"
 source "$SCRIPT_DIR/lib/i18n.sh"
+source "$SCRIPT_DIR/tests/assert-helpers.sh"
 source "$SCRIPT_DIR/lib/alert-lists.sh"
-
-assert_contains() {
-    local haystack=$1
-    local needle=$2
-    local label=$3
-
-    case "$haystack" in
-        *"$needle"*) : ;;
-        *) printf 'Assertion failed for %s\nMissing: %s\n' "$label" "$needle" >&2; exit 1 ;;
-    esac
-}
 
 alerts_json='[
   {"dependency":{"package":{"name":"foo"}},"security_vulnerability":{"first_patched_version":{"identifier":"1.0.0"}},"security_advisory":{"severity":"high"},"is_auto_fixable":true},
@@ -41,5 +31,16 @@ assert_contains "$blocked_output" "No compatible version available" "blocked hea
 
 unfixable_output="$(display_unfixable_alerts "$alerts_json")"
 assert_contains "$unfixable_output" "qux" "unfixable alert"
+
+empty_unfixable='[{"dependency":{"package":{"name":"foo"}},"security_vulnerability":{"first_patched_version":{"identifier":"1.0.0"}},"security_advisory":{"severity":"high"}}]'
+no_unfixable_output="$(display_unfixable_alerts "$empty_unfixable")"
+case "$no_unfixable_output" in
+    *"qux"*) printf 'FAIL: should not have qux\n' >&2; exit 1 ;;
+    *) : ;;
+esac
+
+breaking_json='[{"dependency":{"package":{"name":"bar"}},"security_vulnerability":{"first_patched_version":{"identifier":"2.0.0"}},"security_advisory":{"severity":"critical"},"is_breaking":true}]'
+gt_output="$(display_alerts_by_version_comparison "$breaking_json" "gt" "⚠")"
+assert_contains "$gt_output" "bar" "breaking via gt comparison"
 
 printf 'OK\n'

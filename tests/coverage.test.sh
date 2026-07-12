@@ -4,18 +4,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-source "$SCRIPT_DIR/tests/coverage.sh"
-
-assert_equals() {
-    local expected=$1
-    local actual=$2
-    local label=$3
-
-    if [ "$expected" != "$actual" ]; then
-        printf 'Assertion failed for %s\nExpected: %s\nActual:   %s\n' "$label" "$expected" "$actual" >&2
-        exit 1
-    fi
-}
+source "$SCRIPT_DIR/tests/coverage-helpers.sh"
+source "$SCRIPT_DIR/tests/assert-helpers.sh"
 
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT

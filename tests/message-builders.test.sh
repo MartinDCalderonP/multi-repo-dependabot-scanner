@@ -3,23 +3,17 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$SCRIPT_DIR/tests/assert-helpers.sh"
 source "$SCRIPT_DIR/lib/version-utils.sh"
 source "$SCRIPT_DIR/lib/message-builders.sh"
 
-assert_equals() {
-    local expected=$1
-    local actual=$2
-    local label=$3
-
-    if [ "$expected" != "$actual" ]; then
-        printf 'Assertion failed for %s\nExpected: %s\nActual:   %s\n' "$label" "$expected" "$actual" >&2
-        exit 1
-    fi
-}
-
 assert_equals "pnpm" "$(get_pm_display_name pnpm)" "pnpm display"
 assert_equals "Yarn" "$(get_pm_display_name yarn)" "yarn display"
+assert_equals "npm" "$(get_pm_display_name npm)" "npm display"
+assert_equals "unknown" "$(get_pm_display_name docker)" "unknown display"
 assert_equals "Applied \`npm audit fix\` to resolve vulnerabilities" "$(get_pm_fix_description npm)" "npm description"
+assert_equals "Added Yarn resolutions for transitive dependencies" "$(get_pm_fix_description yarn)" "yarn description"
+assert_equals "Applied \`pnpm audit --fix override\` to resolve vulnerabilities" "$(get_pm_fix_description pnpm)" "pnpm description"
 assert_equals "fix: update foo, bar" "$(build_fix_title 'foo,bar')" "fix title"
 assert_equals "fix: update vulnerable dependencies" "$(build_fix_title '')" "default fix title"
 
@@ -34,6 +28,21 @@ branch_name="$(build_branch_name 'foo, bar')"
 case "$branch_name" in
     fix/dependabot-foo-bar-*) : ;;
     *) printf 'Unexpected branch name: %s\n' "$branch_name" >&2; exit 1 ;;
+esac
+
+empty_list="$(build_package_list '' false)"
+assert_equals "" "$empty_list" "empty package list"
+
+heading_list="$(build_package_list "$package_details" true)"
+case "$heading_list" in
+    *"Updated packages"*) : ;;
+    *) printf 'FAIL: heading missing\n' >&2; exit 1 ;;
+esac
+
+empty_branch="$(build_branch_name '')"
+case "$empty_branch" in
+    fix/dependabot-alerts-*) : ;;
+    *) printf 'FAIL: empty branch should use default prefix: %s\n' "$empty_branch" >&2; exit 1 ;;
 esac
 
 printf 'OK\n'
