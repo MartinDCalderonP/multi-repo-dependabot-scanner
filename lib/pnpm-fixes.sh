@@ -85,6 +85,7 @@ fix_pnpm_vulnerabilities() {
     pnpm install 2>/dev/null
     print_info "$(t running_pnpm_audit)"
     pnpm audit --fix override 2>/dev/null
+    fix_pnpm_overrides "${PACKAGE_VERSION_DETAILS:-}"
     print_info "$(printf "$(t updating_packages)" "$packages")"
     pnpm update $packages 2>/dev/null
     print_info "$(t running_pnpm_install)"

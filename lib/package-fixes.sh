@@ -40,3 +40,20 @@ apply_yarn_resolutions() {
         yarn install 2>/dev/null
     fi
 }
+
+fix_pnpm_overrides() {
+    local details=$1 yaml="pnpm-workspace.yaml"
+    [ ! -f "$yaml" ] && return
+    while IFS=$'\t' read -r pkg _ ver; do
+        [ -z "$pkg" ] || [ -z "$ver" ] && continue
+        local safe_pkg="${pkg//./\\.}"
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^([[:space:]]*)(\"?)(${safe_pkg})(\"?): ]]; then
+                printf '%s%s%s%s: %s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "$pkg" "${BASH_REMATCH[4]}" "$ver"
+            else
+                printf '%s\n' "$line"
+            fi
+        done < "$yaml" > "${yaml}.tmp"
+        mv "${yaml}.tmp" "$yaml"
+    done <<< "$details"
+}
