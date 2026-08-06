@@ -14,7 +14,7 @@ source "$SCRIPT_DIR/lib/i18n.sh"
 source "$SCRIPT_DIR/lib/utils.sh"
 source "$SCRIPT_DIR/tests/assert-helpers.sh"
 source "$SCRIPT_DIR/lib/pnpm-fixes.sh"
-source "$SCRIPT_DIR/lib/package-fixes.sh"
+source "$SCRIPT_DIR/lib/pnpm-overrides.sh"
 
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
