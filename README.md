@@ -37,6 +37,7 @@ multi-repo-dependabot-scanner/
 │   ├── alert-lists.sh            # Alert displays
 │   ├── message-builders.sh       # Commit/PR messages
 │   ├── summaries.sh              # Report summaries
+│   ├── time-utils.sh             # Duration/timestamp helpers
 │   ├── git-operations.sh         # Git commands
 │   ├── repository-processing.sh  # Repo iteration
 │   ├── check-mode.sh             # Check display
@@ -204,6 +205,10 @@ Automatic Git workflow execution (commit, push, PR creation).
 
 Report summaries and statistics.
 
+### `time-utils.sh`
+
+Duration formatting (`format_duration`) and finish timestamp display for the final summary.
+
 ### `git-operations.sh`
 
 Git operations including branch detection (main/master/develop), PR creation with dynamic descriptions, and URL collection.
@@ -237,6 +242,8 @@ Repository processing for all or single specified repos with alert fetching and 
    ⊘ [HIGH] node-tar Symlink Path Traversal - tar → v7.5.11
       Dependabot timed out:
    ⊘ [HIGH] urllib3 vulnerability - urllib3 → v2.6.0
+
+⏱ Finished at: 16:25:38 on 21-08-2026 (duration: 3m 7s)
 ```
 
 ## 🔧 Requirements

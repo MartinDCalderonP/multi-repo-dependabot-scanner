@@ -23,6 +23,7 @@
   "summary_blocked": "⊘ Bloqueadas por Dependabot (constraints): %s",
   "summary_unfixable": "✗ Sin versión patched: %s",
   "summary_repos_fixed": "Repositorios actualizados: %s",
+  "summary_finished_at": "⏱ Finalizado: %s del %s (duración: %s)",
   "section_auto_fixable": "Alertas auto-resolvibles:",
   "section_breaking": "Requieren revisión manual:",
   "section_blocked": "Dependabot no puede actualizar (constraints de dependencias):",

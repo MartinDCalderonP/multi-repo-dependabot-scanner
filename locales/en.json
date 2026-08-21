@@ -23,6 +23,7 @@
   "summary_blocked": "⊘ Blocked by Dependabot (constraints): %s",
   "summary_unfixable": "✗ Without patched version: %s",
   "summary_repos_fixed": "Updated repositories: %s",
+  "summary_finished_at": "⏱ Finished at: %s on %s (duration: %s)",
   "section_auto_fixable": "Auto-fixable alerts:",
   "section_breaking": "Require manual review:",
   "section_blocked": "Dependabot cannot update (dependency constraints):",

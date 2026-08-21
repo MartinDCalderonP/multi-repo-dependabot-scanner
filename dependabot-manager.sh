@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/colors.sh"
 source "$SCRIPT_DIR/lib/i18n.sh"
 source "$SCRIPT_DIR/lib/utils.sh"
+source "$SCRIPT_DIR/lib/time-utils.sh"
 source "$SCRIPT_DIR/lib/version-utils.sh"
 source "$SCRIPT_DIR/lib/pnpm-fixes.sh"
 source "$SCRIPT_DIR/lib/pnpm-overrides.sh"
@@ -46,6 +47,9 @@ repos_fixed=0
 created_pr_urls=()
 
 main() {
+    local scan_start_epoch
+    scan_start_epoch=$(date +%s)
+
     echo "$(t app_title)"
     echo "══════════════════════════════════════"
     if [ -n "$SPECIFIC_REPO" ]; then
@@ -57,7 +61,8 @@ main() {
     
     display_final_summary "$total_repos" "$repos_with_alerts" "$total_alerts" \
                          "$total_fixable" "$total_breaking" "$total_unfixable" \
-                         "$MODE" "$repos_fixed" "$total_blocked"
+                         "$MODE" "$repos_fixed" "$total_blocked" \
+                         "$scan_start_epoch"
     
     if [ ${#created_pr_urls[@]} -gt 0 ]; then
         echo ""

@@ -43,6 +43,7 @@ display_final_summary() {
     local mode=$7
     local repos_fixed=$8
     local total_blocked=$9
+    local scan_start_epoch=${10}
 
     echo ""
     echo "═══════════════════════════════════════════"
@@ -66,5 +67,7 @@ display_final_summary() {
         printf "$(t summary_repos_fixed)\n" "$repos_fixed"
     fi
 
+    echo ""
+    display_finished_at "$scan_start_epoch"
     echo ""
 }
