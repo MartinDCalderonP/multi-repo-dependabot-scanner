@@ -58,6 +58,7 @@ total_blocked=0 repos_fixed=0
 output="$(main)"
 assert_contains "$output" "pull/1" "first PR URL"
 assert_contains "$output" "pull/2" "second PR URL"
+assert_contains "$output" "Pull Requests created: 2" "shows PR count"
 
 created_pr_urls=()
 SPECIFIC_REPO=""

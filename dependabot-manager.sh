@@ -66,7 +66,7 @@ main() {
     
     if [ ${#created_pr_urls[@]} -gt 0 ]; then
         echo ""
-        echo -e "${CYAN}$(t pr_list_title)${NC}"
+        printf "${CYAN}$(t pr_list_title)${NC}\n" "${#created_pr_urls[@]}"
         echo "══════════════════════════════════════"
         for pr_url in "${created_pr_urls[@]}"; do
             echo "   $pr_url"

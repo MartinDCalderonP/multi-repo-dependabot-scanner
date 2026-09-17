@@ -1,7 +1,7 @@
 {
   "app_title": "🔍 Dependabot Alerts Scanner",
   "header_repo": "📂 Repository: %s",
-  "pr_list_title": "🔗 Pull Requests created:",
+  "pr_list_title": "🔗 Pull Requests created: %s",
   "no_alerts": "✅ No alerts",
   "repo_header": "📦 Repository: %s/%s",
   "alerts_found": "🚨 %s alerts found",
